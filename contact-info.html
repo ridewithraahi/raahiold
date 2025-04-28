@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Contact Information - Raahi</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body class="bg-gray-50">
+    <!-- Navigation Bar -->
+    <nav class="bg-white shadow-md fixed top-0 left-0 right-0 z-50">
+        <div class="container mx-auto px-4 py-3">
+            <div class="flex justify-between items-center">
+                <a href="Untitled-1.html" class="text-xl font-bold text-green-600">
+                    <i class="fas fa-arrow-left mr-2"></i>
+                </a>
+                <h1 class="text-xl font-semibold">Contact Information</h1>
+                <div class="w-6"></div> <!-- Spacer for alignment -->
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <div class="container mx-auto px-4 pt-20 pb-24">
+        <form id="contactForm" class="space-y-6">
+            <div>
+                <label class="block text-sm font-medium mb-2">Phone Number <span class="text-red-500">*</span></label>
+                <div class="relative">
+                    <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                        <i class="fas fa-phone text-gray-400"></i>
+                    </div>
+                    <input type="tel" id="phone" name="phone" class="form-input pl-10 block w-full rounded-lg border p-2.5 focus:ring-2 focus:ring-green-500 focus:border-green-500" placeholder="+91 9876543210" required>
+                </div>
+                <p id="phoneError" class="error-message text-red-500 text-sm mt-1 hidden">Please enter a valid Indian phone number</p>
+            </div>
+
+            <div>
+                <label class="block text-sm font-medium mb-2">WhatsApp Number <span class="text-gray-500">(Optional)</span></label>
+                <div class="relative">
+                    <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                        <i class="fab fa-whatsapp text-gray-400"></i>
+                    </div>
+                    <input type="tel" id="whatsapp" name="whatsapp" class="form-input pl-10 block w-full rounded-lg border p-2.5 focus:ring-2 focus:ring-green-500 focus:border-green-500" placeholder="+91 9876543210">
+                </div>
+                <p id="whatsappError" class="error-message text-red-500 text-sm mt-1 hidden">Please enter a valid phone number</p>
+            </div>
+
+            <div>
+                <label class="block text-sm font-medium mb-2">Email Address <span class="text-gray-500">(Optional)</span></label>
+                <div class="relative">
+                    <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                        <i class="fas fa-envelope text-gray-400"></i>
+                    </div>
+                    <input type="email" id="email" name="email" class="form-input pl-10 block w-full rounded-lg border p-2.5 focus:ring-2 focus:ring-green-500 focus:border-green-500" placeholder="your.name@bennett.edu.in" pattern=".+@bennett\.edu\.in$">
+                </div>
+                <p id="emailError" class="error-message text-red-500 text-sm mt-1 hidden">Please use your Bennett University email address</p>
+            </div>
+
+            <div>
+                <label class="block text-sm font-medium mb-2">Emergency Contact <span class="text-red-500">*</span></label>
+                <div class="relative">
+                    <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                        <i class="fas fa-phone-alt text-gray-400"></i>
+                    </div>
+                    <input type="tel" id="emergency" name="emergency" class="form-input pl-10 block w-full rounded-lg border p-2.5 focus:ring-2 focus:ring-green-500 focus:border-green-500" placeholder="+91 9876543210" required>
+                </div>
+                <p id="emergencyError" class="error-message text-red-500 text-sm mt-1 hidden">Please enter a valid phone number</p>
+            </div>
+
+            <div>
+                <label class="block text-sm font-medium mb-2">Emergency Contact Name <span class="text-red-500">*</span></label>
+                <div class="relative">
+                    <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                        <i class="fas fa-user text-gray-400"></i>
+                    </div>
+                    <input type="text" id="emergencyName" name="emergencyName" class="form-input pl-10 block w-full rounded-lg border p-2.5 focus:ring-2 focus:ring-green-500 focus:border-green-500" placeholder="Parent/Guardian Name" required>
+                </div>
+            </div>
+
+            <button type="submit" class="w-full bg-green-600 text-white py-3 rounded-lg font-semibold hover:bg-green-700 transition duration-200 flex items-center justify-center">
+                <i class="fas fa-save mr-2"></i>
+                <span>Save Changes</span>
+                <div id="saveSpinner" class="loading-spinner ml-2 hidden"></div>
+            </button>
+        </form>
+    </div>
+
+    <script type="module">
+        import { auth, db } from './firebase.js';
+        import { doc, getDoc, updateDoc } from 'https://www.gstatic.com/firebasejs/9.0.0/firebase-firestore.js';
+
+        const contactForm = document.getElementById('contactForm');
+        const saveSpinner = document.getElementById('saveSpinner');
+
+        // Phone number validation
+        function validatePhone(phone) {
+            const cleaned = phone.replace(/\D/g, '');
+            return /^[6-9]\d{9}$/.test(cleaned) || /^91[6-9]\d{9}$/.test(cleaned);
+        }
+
+        // Load user data
+        async function loadUserData() {
+            try {
+                const user = auth.currentUser;
+                if (!user) {
+                    window.location.href = 'login.html';
+                    return;
+                }
+
+                const userDoc = await getDoc(doc(db, 'users', user.uid));
+                if (userDoc.exists()) {
+                    const data = userDoc.data();
+                    document.getElementById('phone').value = data.phone || '';
+                    document.getElementById('whatsapp').value = data.whatsapp || '';
+                    document.getElementById('email').value = data.email || '';
+                    document.getElementById('emergency').value = data.emergencyContact || '';
+                    document.getElementById('emergencyName').value = data.emergencyName || '';
+                }
+            } catch (error) {
+                console.error('Error loading user data:', error);
+                alert('Failed to load user data. Please try again.');
+            }
+        }
+
+        // Save contact information
+        contactForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const phone = document.getElementById('phone').value.trim();
+            const whatsapp = document.getElementById('whatsapp').value.trim();
+            const email = document.getElementById('email').value.trim();
+            const emergency = document.getElementById('emergency').value.trim();
+            const emergencyName = document.getElementById('emergencyName').value.trim();
+
+            // Validate phone numbers
+            if (!validatePhone(phone)) {
+                document.getElementById('phoneError').classList.remove('hidden');
+                return;
+            }
+
+            if (whatsapp && !validatePhone(whatsapp)) {
+                document.getElementById('whatsappError').classList.remove('hidden');
+                return;
+            }
+
+            if (!validatePhone(emergency)) {
+                document.getElementById('emergencyError').classList.remove('hidden');
+                return;
+            }
+
+            // Validate email if provided
+            if (email && !email.endsWith('@bennett.edu.in')) {
+                document.getElementById('emailError').classList.remove('hidden');
+                return;
+            }
+
+            try {
+                const user = auth.currentUser;
+                saveSpinner.classList.remove('hidden');
+
+                await updateDoc(doc(db, 'users', user.uid), {
+                    phone,
+                    whatsapp: whatsapp || null,
+                    email: email || null,
+                    emergencyContact: emergency,
+                    emergencyName,
+                    updatedAt: new Date().toISOString()
+                });
+
+                window.location.href = 'Untitled-1.html';
+            } catch (error) {
+                console.error('Error saving contact info:', error);
+                alert('Failed to save changes. Please try again.');
+            } finally {
+                saveSpinner.classList.add('hidden');
+            }
+        });
+
+        // Load user data when page loads
+        document.addEventListener('DOMContentLoaded', loadUserData);
+
+        // Hide error messages when inputs change
+        document.querySelectorAll('input').forEach(input => {
+            input.addEventListener('input', () => {
+                const errorElement = document.getElementById(`${input.id}Error`);
+                if (errorElement) {
+                    errorElement.classList.add('hidden');
+                }
+            });
+        });
+    </script>
+</body>
+</html> 

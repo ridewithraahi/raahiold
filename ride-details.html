@@ -1,0 +1,507 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ride Details - Raahi</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        .loading-spinner {
+            display: inline-block;
+            border: 3px solid rgba(16, 185, 129, 0.2);
+            border-radius: 50%;
+            border-top: 3px solid #10b981;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+        }
+        .loading-spinner.small {
+            width: 20px;
+            height: 20px;
+            border-width: 2px;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        .animate-fade-in {
+            animation: fadeIn 0.3s ease-in-out;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+    </style>
+</head>
+<body class="bg-gray-50 min-h-screen">
+    <!-- Header -->
+    <header class="bg-white shadow-sm">
+        <div class="container mx-auto px-4 py-4 flex items-center">
+            <button onclick="history.back()" class="mr-4 text-gray-600 hover:text-gray-900">
+                <i class="fas fa-arrow-left"></i>
+            </button>
+            <h1 class="text-2xl font-bold text-gray-900">Ride Details</h1>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="container mx-auto px-4 py-6">
+        <div id="loadingSpinner" class="flex flex-col justify-center items-center py-12">
+            <div class="loading-spinner mb-4"></div>
+            <p class="text-gray-600">Loading ride details...</p>
+        </div>
+
+        <div id="rideDetails" class="hidden">
+            <!-- Ride Info Card -->
+            <div class="bg-white rounded-xl shadow-sm p-6 mb-6">
+                <div class="flex items-center space-x-4 mb-6">
+                    <img id="driverImage" class="w-16 h-16 rounded-full object-cover" src="" alt="Driver">
+                    <div class="flex-grow">
+                        <h2 id="driverName" class="text-xl font-semibold"></h2>
+                        <div class="flex items-center mt-1">
+                            <i class="fas fa-star text-yellow-400 text-sm"></i>
+                            <span class="text-sm text-gray-600 ml-1">4.5</span>
+                            <span class="text-sm text-gray-400 ml-2">(50+ rides)</span>
+                        </div>
+                    </div>
+                    <div id="contactInfo" class="hidden">
+                        <a id="whatsappButton" href="#" target="_blank" 
+                           class="inline-flex items-center px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors">
+                            <i class="fab fa-whatsapp mr-2"></i>
+                            Chat on WhatsApp
+                        </a>
+                        <p id="phoneNumber" class="text-sm text-gray-600 mt-2 text-center"></p>
+                    </div>
+                </div>
+
+                <div class="space-y-4">
+                    <div class="bg-gray-50 p-4 rounded-lg">
+                        <div class="flex items-start">
+                            <div class="flex-shrink-0 mt-1">
+                                <i class="fas fa-map-marker-alt text-primary"></i>
+                            </div>
+                            <div class="ml-3">
+                                <p class="text-sm text-gray-600">Pickup Location</p>
+                                <p id="startingPoint" class="font-medium"></p>
+                            </div>
+                        </div>
+                        <div class="h-8 border-l-2 border-dashed border-gray-300 ml-2 my-2"></div>
+                        <div class="flex items-start">
+                            <div class="flex-shrink-0 mt-1">
+                                <i class="fas fa-map-marker-alt text-red-500"></i>
+                            </div>
+                            <div class="ml-3">
+                                <p class="text-sm text-gray-600">Drop Location</p>
+                                <p id="destination" class="font-medium"></p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-4">
+                        <div class="bg-gray-50 p-4 rounded-lg">
+                            <div class="flex items-center">
+                                <i class="fas fa-calendar text-primary mr-2"></i>
+                                <div>
+                                    <p class="text-sm text-gray-600">Date</p>
+                                    <p id="date" class="font-medium"></p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="bg-gray-50 p-4 rounded-lg">
+                            <div class="flex items-center">
+                                <i class="fas fa-clock text-primary mr-2"></i>
+                                <div>
+                                    <p class="text-sm text-gray-600">Time</p>
+                                    <p id="time" class="font-medium"></p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-4">
+                        <div class="bg-gray-50 p-4 rounded-lg">
+                            <div class="flex items-center">
+                                <i class="fas fa-users text-primary mr-2"></i>
+                                <div>
+                                    <p class="text-sm text-gray-600">Available Seats</p>
+                                    <p id="seats" class="font-medium"></p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="bg-gray-50 p-4 rounded-lg">
+                            <div class="flex items-center">
+                                <i class="fas fa-rupee-sign text-primary mr-2"></i>
+                                <div>
+                                    <p class="text-sm text-gray-600">Price per Seat</p>
+                                    <p id="price" class="font-medium"></p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Booking Form -->
+            <div class="bg-white rounded-xl shadow-sm p-6">
+                <h3 class="text-lg font-semibold mb-4">Confirm Booking</h3>
+                <form id="bookingForm" class="space-y-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">
+                            Number of Seats
+                            <span class="text-red-500">*</span>
+                        </label>
+                        <select id="seatsInput" class="block w-full rounded-lg border-gray-300 border p-2.5 focus:ring-2 focus:ring-green-500 focus:border-green-500">
+                            <option value="1">1 seat</option>
+                        </select>
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Special Requests (Optional)</label>
+                        <textarea id="requestsInput" rows="3" class="block w-full rounded-lg border-gray-300 border p-2.5 focus:ring-2 focus:ring-green-500 focus:border-green-500" placeholder="Any special requests for the driver?"></textarea>
+                    </div>
+
+                    <button type="submit" id="confirmButton" class="w-full bg-green-600 text-white py-3 rounded-lg font-semibold hover:bg-green-700 transition duration-200 flex items-center justify-center">
+                        <span>Send Request</span>
+                        <div id="confirmSpinner" class="loading-spinner small ml-2 hidden"></div>
+                    </button>
+                </form>
+            </div>
+        </div>
+
+        <!-- Error Message -->
+        <div id="errorMessage" class="hidden bg-white rounded-xl shadow-sm p-6 text-center">
+            <i class="fas fa-exclamation-circle text-red-500 text-4xl mb-4"></i>
+            <h3 class="text-lg font-medium text-gray-900 mb-2">Error Loading Ride</h3>
+            <p class="text-gray-600 mb-4">Unable to load ride details. Please try again.</p>
+            <button onclick="window.location.href='Untitled-1.html'" class="text-green-600 font-medium hover:text-green-700">
+                Return to Search
+            </button>
+        </div>
+    </main>
+
+    <script type="module">
+        import { 
+            getCurrentUser, 
+            getUserProfile,
+            getRide,
+            createBooking,
+            getBookingByRideAndUser,
+            database
+        } from './firebase.js';
+        import { ref, get } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+
+        // Get DOM elements
+        const loadingSpinner = document.getElementById('loadingSpinner');
+        const rideDetails = document.getElementById('rideDetails');
+        const errorMessage = document.getElementById('errorMessage');
+        const bookingForm = document.getElementById('bookingForm');
+        const confirmButton = document.getElementById('confirmButton');
+        const confirmSpinner = document.getElementById('confirmSpinner');
+        const contactInfo = document.getElementById('contactInfo');
+        const whatsappButton = document.getElementById('whatsappButton');
+        const phoneNumber = document.getElementById('phoneNumber');
+
+        // Initialize page
+        let currentUser = null;
+        let userProfile = null;
+        let currentRide = null;
+        let driverProfile = null;
+
+        async function initializePage() {
+            try {
+                console.log('Initializing page...');
+                
+                // Get selected ride ID from session storage
+                const selectedRideId = sessionStorage.getItem('selectedRideId');
+                console.log('Selected Ride ID:', selectedRideId);
+                
+                if (!selectedRideId) {
+                    throw new Error('No ride selected');
+                }
+
+                // Check if user is logged in
+                currentUser = await getCurrentUser();
+                console.log('Current User:', currentUser?.uid);
+                
+                if (!currentUser) {
+                    window.location.href = 'login.html';
+                    return;
+                }
+
+                // Get user profile with fallback to local storage
+                try {
+                    userProfile = await getUserProfile(currentUser.uid);
+                    console.log('User Profile:', userProfile);
+                    
+                    if (!userProfile || !userProfile.fullName) {
+                        // Check local storage as fallback
+                        const localProfile = localStorage.getItem(`user_${currentUser.uid}`);
+                        if (localProfile) {
+                            userProfile = JSON.parse(localProfile);
+                            console.log('Using local storage profile:', userProfile);
+                        } else {
+                            window.location.href = 'complete-profile.html';
+                            return;
+                        }
+                    }
+                } catch (profileError) {
+                    console.error('Error getting user profile:', profileError);
+                    // Check local storage as fallback
+                    const localProfile = localStorage.getItem(`user_${currentUser.uid}`);
+                    if (localProfile) {
+                        userProfile = JSON.parse(localProfile);
+                        console.log('Using local storage profile:', userProfile);
+                    } else {
+                        window.location.href = 'complete-profile.html';
+                        return;
+                    }
+                }
+
+                // Get ride details with fallback to local storage
+                try {
+                    currentRide = await getRide(selectedRideId);
+                    console.log('Current Ride:', currentRide);
+                    
+                    if (!currentRide) {
+                        // Check local storage for mock rides
+                        const mockRidesKey = `mock_rides_${currentRide?.driverId}`;
+                        const mockRides = localStorage.getItem(mockRidesKey);
+                        if (mockRides) {
+                            const rides = JSON.parse(mockRides);
+                            currentRide = rides.find(r => r.id === selectedRideId);
+                        }
+                        
+                        if (!currentRide) {
+                            throw new Error('Ride not found');
+                        }
+                    }
+                } catch (rideError) {
+                    console.error('Error getting ride:', rideError);
+                    // Check all mock rides in local storage
+                    let found = false;
+                    for (const key of Object.keys(localStorage)) {
+                        if (key.startsWith('mock_rides_')) {
+                            try {
+                                const rides = JSON.parse(localStorage.getItem(key));
+                                currentRide = rides.find(r => r.id === selectedRideId);
+                                if (currentRide) {
+                                    found = true;
+                                    break;
+                                }
+                            } catch (e) {
+                                console.error('Error parsing mock rides:', e);
+                            }
+                        }
+                    }
+                    if (!found) {
+                        throw new Error('Ride not found');
+                    }
+                }
+
+                // Get driver profile with fallback
+                try {
+                    const driverSnapshot = await get(ref(database, `users/${currentRide.driverId}`));
+                    if (driverSnapshot.exists()) {
+                        driverProfile = driverSnapshot.val();
+                        console.log('Driver Profile:', driverProfile);
+                    }
+                } catch (driverError) {
+                    console.error('Error getting driver profile:', driverError);
+                    // Try to get from local storage
+                    const localDriverProfile = localStorage.getItem(`user_${currentRide.driverId}`);
+                    if (localDriverProfile) {
+                        driverProfile = JSON.parse(localDriverProfile);
+                        console.log('Using local storage driver profile:', driverProfile);
+                    }
+                }
+
+                // Check if user has already booked this ride
+                try {
+                    const existingBooking = await getBookingByRideAndUser(selectedRideId, currentUser.uid);
+                    console.log('Existing Booking:', existingBooking);
+                    
+                    if (existingBooking) {
+                        showContactInfo();
+                    } else {
+                        // Check local storage for mock bookings
+                        const mockBookingsKey = `mock_bookings_${currentUser.uid}`;
+                        const mockBookings = localStorage.getItem(mockBookingsKey);
+                        if (mockBookings) {
+                            const bookings = JSON.parse(mockBookings);
+                            const localBooking = bookings.find(b => b.rideId === selectedRideId);
+                            if (localBooking) {
+                                showContactInfo();
+                            }
+                        }
+                    }
+                } catch (bookingError) {
+                    console.error('Error checking existing booking:', bookingError);
+                    // Check local storage for mock bookings
+                    const mockBookingsKey = `mock_bookings_${currentUser.uid}`;
+                    const mockBookings = localStorage.getItem(mockBookingsKey);
+                    if (mockBookings) {
+                        const bookings = JSON.parse(mockBookings);
+                        const localBooking = bookings.find(b => b.rideId === selectedRideId);
+                        if (localBooking) {
+                            showContactInfo();
+                        }
+                    }
+                }
+
+                // Update ride details in the UI
+                updateRideDetails();
+
+                // Show ride details
+                loadingSpinner.classList.add('hidden');
+                rideDetails.classList.remove('hidden');
+                rideDetails.classList.add('animate-fade-in');
+                
+            } catch (error) {
+                console.error('Error initializing page:', error);
+                loadingSpinner.classList.add('hidden');
+                errorMessage.classList.remove('hidden');
+                errorMessage.classList.add('animate-fade-in');
+            }
+        }
+
+        function showContactInfo() {
+            if (driverProfile && driverProfile.phone) {
+                contactInfo.classList.remove('hidden');
+                
+                // Clean and format the phone number
+                let phoneNum = driverProfile.phone;
+                // Remove any spaces, dashes, or other characters
+                phoneNum = phoneNum.replace(/[\s\-\(\)]/g, '');
+                
+                // If number starts with +91, remove it
+                if (phoneNum.startsWith('+91')) {
+                    phoneNum = phoneNum.substring(3);
+                }
+                // If number starts with 91, remove it
+                if (phoneNum.startsWith('91')) {
+                    phoneNum = phoneNum.substring(2);
+                }
+                // If number starts with 0, remove it
+                if (phoneNum.startsWith('0')) {
+                    phoneNum = phoneNum.substring(1);
+                }
+                
+                // Display formatted phone number
+                phoneNumber.textContent = `Phone: ${driverProfile.phone}`;
+                
+                // Create WhatsApp URL
+                const message = `Hi, I'm interested in your ride from ${currentRide.startingPoint} to ${currentRide.destination}`;
+                const encodedMessage = encodeURIComponent(message);
+                
+                // Use international format for WhatsApp
+                const whatsappUrl = `https://wa.me/91${phoneNum}?text=${encodedMessage}`;
+                whatsappButton.href = whatsappUrl;
+                
+                // Add click handler for testing the URL
+                whatsappButton.onclick = function(e) {
+                    console.log('Opening WhatsApp URL:', whatsappUrl);
+                    // Open in new tab
+                    window.open(whatsappUrl, '_blank');
+                    e.preventDefault();
+                };
+            }
+        }
+
+        function updateRideDetails() {
+            // Update driver info
+            document.getElementById('driverImage').src = driverProfile?.profilePicture || `https://ui-avatars.com/api/?name=${encodeURIComponent(driverProfile?.fullName || 'Driver')}&background=10B981&color=fff`;
+            document.getElementById('driverName').textContent = driverProfile?.fullName || 'Driver';
+
+            // Update route
+            document.getElementById('startingPoint').textContent = currentRide.startingPoint;
+            document.getElementById('destination').textContent = currentRide.destination;
+
+            // Update date and time
+            const rideDate = new Date(currentRide.date);
+            document.getElementById('date').textContent = rideDate.toLocaleDateString('en-US', {
+                weekday: 'long',
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric'
+            });
+            document.getElementById('time').textContent = currentRide.time;
+
+            // Update seats and price
+            document.getElementById('seats').textContent = `${currentRide.availableSeats} available`;
+            document.getElementById('price').textContent = `₹${currentRide.price}`;
+
+            // Update seats input options
+            const seatsInput = document.getElementById('seatsInput');
+            seatsInput.innerHTML = '';
+            for (let i = 1; i <= currentRide.availableSeats; i++) {
+                const option = document.createElement('option');
+                option.value = i;
+                option.textContent = `${i} seat${i > 1 ? 's' : ''}`;
+                seatsInput.appendChild(option);
+            }
+        }
+
+        // Handle booking form submission
+        bookingForm.addEventListener('submit', async function(e) {
+            e.preventDefault();
+
+            try {
+                // Disable button and show spinner
+                confirmButton.disabled = true;
+                confirmSpinner.classList.remove('hidden');
+
+                // Get form values
+                const seats = parseInt(document.getElementById('seatsInput').value);
+                const specialRequests = document.getElementById('requestsInput').value.trim();
+
+                // Create booking data
+                const bookingData = {
+                    rideId: currentRide.id,
+                    passengerId: currentUser.uid,
+                    passengerName: userProfile.fullName,
+                    passengerPhone: userProfile.phone || '',
+                    driverId: currentRide.driverId,
+                    driverName: driverProfile?.fullName || 'Driver',
+                    startingPoint: currentRide.startingPoint,
+                    destination: currentRide.destination,
+                    date: currentRide.date,
+                    price: currentRide.price,
+                    seats: seats,
+                    specialRequests: specialRequests,
+                    status: 'pending',
+                    createdAt: new Date().toISOString()
+                };
+
+                // Create the booking
+                await createBooking(bookingData);
+
+                // Show contact info
+                showContactInfo();
+
+                // Show success message and redirect
+                alert('Your ride request has been sent to the driver. You can now chat with them on WhatsApp.');
+                window.location.href = 'Untitled-5.html'; // Redirect to dashboard page
+
+            } catch (error) {
+                console.error('Error creating booking:', error);
+                alert('Failed to create booking. Please try again.');
+
+                // Reset button state
+                confirmButton.disabled = false;
+                confirmSpinner.classList.add('hidden');
+            }
+        });
+
+        // Initialize the page when DOM is fully loaded
+        document.addEventListener('DOMContentLoaded', () => {
+            console.log('DOM loaded, initializing page...');
+            initializePage();
+        });
+    </script>
+</body>
+</html> 

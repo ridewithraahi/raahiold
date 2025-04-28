@@ -1,0 +1,1099 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Rides - Raahi</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            padding-bottom: 4rem;
+        }
+        
+        .bottom-nav-item.active {
+            color: #000;
+        }
+        
+        .tab.active {
+            color: #000;
+            border-bottom: 2px solid #000;
+        }
+        
+        .loading-spinner {
+            display: inline-block;
+            border: 3px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            border-top: 3px solid #fff;
+            width: 20px;
+            height: 20px;
+            animation: spin 1s linear infinite;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .skeleton {
+            background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+            background-size: 200% 100%;
+            animation: loading 1.5s infinite;
+        }
+        
+        @keyframes loading {
+            0% {
+                background-position: 200% 0;
+            }
+            100% {
+                background-position: -200% 0;
+            }
+        }
+    </style>
+</head>
+
+<body class="bg-gray-100 min-h-screen">
+    <!-- Header -->
+    <header class="bg-white shadow-sm">
+        <div class="container mx-auto px-4 py-4">
+            <h1 class="text-2xl font-bold text-gray-900">My Rides</h1>
+        </div>
+    </header>
+
+    <!-- Tabs -->
+    <div class="bg-white border-b">
+        <div class="container mx-auto px-4">
+            <div class="flex space-x-8">
+                <button class="tab active py-4 px-2 text-sm font-medium" data-tab="upcoming">
+                    Upcoming Rides
+                </button>
+                <button class="tab py-4 px-2 text-sm font-medium text-gray-500" data-tab="past">
+                    Past Rides
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="container mx-auto px-4 py-6">
+        <!-- Upcoming Rides -->
+        <div id="upcomingRides" class="space-y-4">
+            <!-- Loading skeletons -->
+            <div class="skeleton-item bg-white rounded-xl shadow-sm p-6">
+                <div class="flex items-center justify-between mb-4">
+                    <div class="flex items-center space-x-2">
+                        <div class="h-5 w-20 skeleton rounded"></div>
+                        <div class="h-5 w-32 skeleton"></div>
+                    </div>
+                    <div class="h-5 w-16 skeleton"></div>
+                </div>
+                <div class="space-y-3">
+                    <div class="flex items-start">
+                        <div class="w-5 h-5 skeleton rounded-full mr-2"></div>
+                        <div class="flex-1">
+                            <div class="h-5 w-32 skeleton mb-1"></div>
+                            <div class="h-4 w-48 skeleton"></div>
+                        </div>
+                    </div>
+                    <div class="flex items-start">
+                        <div class="w-5 h-5 skeleton rounded-full mr-2"></div>
+                        <div class="flex-1">
+                            <div class="h-5 w-32 skeleton mb-1"></div>
+                            <div class="h-4 w-48 skeleton"></div>
+                        </div>
+                    </div>
+                </div>
+                <div class="mt-4 pt-4 border-t">
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center space-x-4">
+                            <div class="flex -space-x-2">
+                                <div class="w-8 h-8 skeleton rounded-full"></div>
+                                <div class="w-8 h-8 skeleton rounded-full"></div>
+                            </div>
+                            <div class="h-4 w-24 skeleton"></div>
+                        </div>
+                        <div class="flex space-x-2">
+                            <div class="h-8 w-20 skeleton rounded-lg"></div>
+                            <div class="h-8 w-20 skeleton rounded-lg"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- No rides message (initially hidden) -->
+            <div id="noUpcomingRidesMessage" class="hidden bg-white rounded-xl shadow-sm p-6 text-center">
+                <i class="fas fa-car-side text-gray-400 text-4xl mb-4"></i>
+                <h3 class="text-lg font-medium text-gray-900 mb-2">No upcoming rides</h3>
+                <p class="text-gray-600">You don't have any upcoming rides yet.</p>
+                <div class="mt-4 flex justify-center space-x-4">
+                    <a href="Untitled-2.html" class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition">
+                        Offer a Ride
+                    </a>
+                    <a href="Untitled-1.html" class="px-4 py-2 border border-green-600 text-green-600 rounded-lg hover:bg-green-50 transition">
+                        Find a Ride
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Past Rides -->
+        <div id="pastRides" class="space-y-4 hidden">
+            <!-- Loading skeletons -->
+            <div class="skeleton-item bg-white rounded-xl shadow-sm p-6">
+                <div class="flex items-center justify-between mb-4">
+                    <div class="flex items-center space-x-2">
+                        <div class="h-5 w-20 skeleton rounded"></div>
+                        <div class="h-5 w-32 skeleton"></div>
+                    </div>
+                    <div class="h-5 w-16 skeleton"></div>
+                </div>
+                <div class="space-y-3">
+                    <div class="flex items-start">
+                        <div class="w-5 h-5 skeleton rounded-full mr-2"></div>
+                        <div class="flex-1">
+                            <div class="h-5 w-32 skeleton mb-1"></div>
+                            <div class="h-4 w-48 skeleton"></div>
+                        </div>
+                    </div>
+                    <div class="flex items-start">
+                        <div class="w-5 h-5 skeleton rounded-full mr-2"></div>
+                        <div class="flex-1">
+                            <div class="h-5 w-32 skeleton mb-1"></div>
+                            <div class="h-4 w-48 skeleton"></div>
+                        </div>
+                    </div>
+                </div>
+                <div class="mt-4 pt-4 border-t">
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center space-x-3">
+                            <div class="w-8 h-8 skeleton rounded-full"></div>
+                            <div>
+                                <div class="h-5 w-24 skeleton mb-1"></div>
+                                <div class="h-4 w-16 skeleton"></div>
+                            </div>
+                        </div>
+                        <div class="h-8 w-20 skeleton rounded-lg"></div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- No rides message (initially hidden) -->
+            <div id="noPastRidesMessage" class="hidden bg-white rounded-xl shadow-sm p-6 text-center">
+                <i class="fas fa-history text-gray-400 text-4xl mb-4"></i>
+                <h3 class="text-lg font-medium text-gray-900 mb-2">No past rides</h3>
+                <p class="text-gray-600">Your ride history will appear here.</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Passenger Details Modal (Hidden by default) -->
+    <div id="passengersModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden">
+        <div class="bg-white rounded-xl max-w-md w-full max-h-[80vh] overflow-y-auto">
+            <div class="p-4 border-b border-gray-200 flex justify-between items-center">
+                <h3 class="text-lg font-semibold">Ride Passengers</h3>
+                <button id="closePassengersBtn" class="text-gray-500 hover:text-gray-700">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div id="passengersContent" class="p-4">
+                <!-- Passengers will be loaded here -->
+                <div class="skeleton-item space-y-4">
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center space-x-3">
+                            <div class="w-10 h-10 rounded-full skeleton"></div>
+                            <div>
+                                <div class="h-5 w-32 skeleton mb-1"></div>
+                                <div class="h-4 w-24 skeleton"></div>
+                            </div>
+                        </div>
+                        <div class="flex space-x-2">
+                            <div class="h-8 w-20 skeleton rounded-lg"></div>
+                            <div class="h-8 w-20 skeleton rounded-lg"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Booking Requests Modal (Hidden by default) -->
+    <div id="requestsModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden">
+        <div class="bg-white rounded-xl max-w-md w-full max-h-[80vh] overflow-y-auto">
+            <div class="p-4 border-b border-gray-200 flex justify-between items-center">
+                <h3 class="text-lg font-semibold">Booking Requests</h3>
+                <button id="closeRequestsBtn" class="text-gray-500 hover:text-gray-700">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div id="requestsContent" class="p-4">
+                <!-- Requests will be loaded here -->
+                <div class="skeleton-item space-y-4">
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center space-x-3">
+                            <div class="w-10 h-10 rounded-full skeleton"></div>
+                            <div>
+                                <div class="h-5 w-32 skeleton mb-1"></div>
+                                <div class="h-4 w-24 skeleton"></div>
+                            </div>
+                        </div>
+                        <div class="flex space-x-2">
+                            <div class="h-8 w-20 skeleton rounded-lg"></div>
+                            <div class="h-8 w-20 skeleton rounded-lg"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bottom Navigation -->
+    <nav class="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200">
+        <div class="flex justify-around items-center h-16">
+            <a href="Untitled-5.html" class="bottom-nav-item flex flex-col items-center text-sm text-gray-600">
+                <i class="fas fa-home text-xl mb-1"></i>
+                <span>Home</span>
+            </a>
+            <a href="Untitled-1.html" class="bottom-nav-item flex flex-col items-center text-sm text-gray-600">
+                <i class="fas fa-search text-xl mb-1"></i>
+                <span>Find</span>
+            </a>
+            <a href="Untitled-2.html" class="bottom-nav-item flex flex-col items-center text-sm text-gray-600">
+                <i class="fas fa-plus-circle text-xl mb-1"></i>
+                <span>Offer</span>
+            </a>
+            <a href="Untitled-9.html" class="bottom-nav-item flex flex-col items-center text-sm text-gray-600">
+                <i class="fas fa-car text-xl mb-1"></i>
+                <span>My Rides</span>
+            </a>
+            <a href="Untitled-4.html" class="bottom-nav-item flex flex-col items-center text-sm text-gray-600">
+                <span>Profile</span>
+            </a>
+        </div>
+    </nav>
+
+    <!-- Firebase SDK -->
+    <script type="module">
+        // Import Firebase functions
+        import { 
+            getCurrentUser, 
+            getUserProfile, 
+            getUserRides,
+            getUserBookings,
+            getRideBookings,
+            getRide,
+            updateRide,
+            updateBookingStatus,
+            deleteRide
+        } from './firebase.js';
+
+        // Import Firebase Realtime Database
+        import { ref, onChildAdded, onChildChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-database.js";
+        import { database } from './firebase.js';
+
+        // DOM Elements
+        const tabs = document.querySelectorAll('.tab');
+        const upcomingRides = document.getElementById('upcomingRides');
+        const pastRides = document.getElementById('pastRides');
+        const noUpcomingRidesMessage = document.getElementById('noUpcomingRidesMessage');
+        const noPastRidesMessage = document.getElementById('noPastRidesMessage');
+        const passengersModal = document.getElementById('passengersModal');
+        const closePassengersBtn = document.getElementById('closePassengersBtn');
+        const passengersContent = document.getElementById('passengersContent');
+        const requestsModal = document.getElementById('requestsModal');
+        const closeRequestsBtn = document.getElementById('closeRequestsBtn');
+        const requestsContent = document.getElementById('requestsContent');
+        
+        // Current user data
+        let currentUser = null;
+        let userProfile = null;
+        
+        // Initialize
+        window.addEventListener('DOMContentLoaded', async function() {
+            try {
+                currentUser = await getCurrentUser();
+                if (!currentUser) {
+                    // User is not logged in, redirect to login page
+                    window.location.href = 'Untitled-3.html';
+                    return;
+                }
+                
+                // Get user profile
+                userProfile = await getUserProfile(currentUser.uid);
+                if (!userProfile || !(userProfile.profileComplete || userProfile.isProfileComplete)) {
+                    // Profile not complete, redirect to profile completion page
+                    window.location.href = 'Untitled-6.html';
+                    return;
+                }
+                
+                // Load rides
+                await loadRides();
+
+                // Listen for new bookings (driver)
+                listenForNewBookings(currentUser.uid);
+                // Listen for booking status changes (passenger)
+                listenForBookingStatusChanges(currentUser.uid);
+            } catch (error) {
+                console.error('Auth state check error:', error);
+                window.location.href = 'Untitled-3.html';
+            }
+        });
+        
+        // Tab switching functionality
+        tabs.forEach(tab => {
+            tab.addEventListener('click', () => {
+                // Update tab styles
+                tabs.forEach(t => {
+                    t.classList.remove('active');
+                    t.classList.add('text-gray-500');
+                });
+                tab.classList.add('active');
+                tab.classList.remove('text-gray-500');
+                
+                // Show/hide content
+                if (tab.dataset.tab === 'upcoming') {
+                    upcomingRides.classList.remove('hidden');
+                    pastRides.classList.add('hidden');
+                } else {
+                    upcomingRides.classList.add('hidden');
+                    pastRides.classList.remove('hidden');
+                }
+            });
+        });
+        
+        // Load user rides
+        async function loadRides() {
+            try {
+                // Get user's rides and bookings
+                const [userRides, userBookings] = await Promise.all([
+                    getUserRides(currentUser.uid),
+                    getUserBookings(currentUser.uid)
+                ]);
+                
+                // Process rides
+                const now = new Date();
+                
+                // Separate upcoming and past rides
+                const upcomingUserRides = userRides.filter(ride => new Date(ride.date) > now);
+                const pastUserRides = userRides.filter(ride => new Date(ride.date) <= now);
+                
+                // Separate upcoming and past bookings
+                const upcomingBookings = userBookings.filter(booking => 
+                    new Date(booking.date) > now && 
+                    ['pending', 'approved'].includes(booking.status)
+                );
+                const pastBookings = userBookings.filter(booking => 
+                    new Date(booking.date) <= now || 
+                    ['cancelled', 'declined', 'completed'].includes(booking.status)
+                );
+                
+                // Sort by date
+                upcomingUserRides.sort((a, b) => new Date(a.date) - new Date(b.date));
+                pastUserRides.sort((a, b) => new Date(b.date) - new Date(a.date)); // Past rides in reverse order
+                upcomingBookings.sort((a, b) => new Date(a.date) - new Date(b.date));
+                pastBookings.sort((a, b) => new Date(b.date) - new Date(a.date)); // Past bookings in reverse order
+                
+                // Remove skeletons
+                const skeletons = document.querySelectorAll('.skeleton-item');
+                skeletons.forEach(skeleton => skeleton.remove());
+                
+                // Display upcoming rides
+                if (upcomingUserRides.length === 0 && upcomingBookings.length === 0) {
+                    noUpcomingRidesMessage.classList.remove('hidden');
+                } else {
+                    noUpcomingRidesMessage.classList.add('hidden');
+                    
+                    // Display rides as driver
+                    upcomingUserRides.forEach(ride => {
+                        createRideCard(ride, 'driver', 'upcoming');
+                    });
+                    
+                    // Display rides as passenger
+                    upcomingBookings.forEach(booking => {
+                        createRideCard(booking, 'passenger', 'upcoming');
+                    });
+                }
+                
+                // Display past rides
+                if (pastUserRides.length === 0 && pastBookings.length === 0) {
+                    noPastRidesMessage.classList.remove('hidden');
+                } else {
+                    noPastRidesMessage.classList.add('hidden');
+                    
+                    // Display past rides as driver
+                    pastUserRides.forEach(ride => {
+                        createRideCard(ride, 'driver', 'past');
+                    });
+                    
+                    // Display past rides as passenger
+                    pastBookings.forEach(booking => {
+                        createRideCard(booking, 'passenger', 'past');
+                    });
+                }
+            } catch (error) {
+                console.error('Error loading rides:', error);
+                
+                // Remove skeletons
+                const skeletons = document.querySelectorAll('.skeleton-item');
+                skeletons.forEach(skeleton => skeleton.remove());
+                
+                // Show error message
+                upcomingRides.innerHTML = `
+                    <div class="bg-white rounded-xl shadow-sm p-6 text-center">
+                        <i class="fas fa-exclamation-circle text-red-500 text-4xl mb-4"></i>
+                        <h3 class="text-lg font-medium text-gray-900 mb-2">Error loading rides</h3>
+                        <p class="text-gray-600">Something went wrong. Please try again.</p>
+                        <button id="retryButton" class="mt-4 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition">
+                            Retry
+                        </button>
+                    </div>
+                `;
+                
+                pastRides.innerHTML = '';
+                
+                document.getElementById('retryButton').addEventListener('click', () => {
+                    // Reload page
+                    window.location.reload();
+                });
+            }
+        }
+        
+        // Create ride card
+        function createRideCard(ride, role, type) {
+            const container = type === 'upcoming' ? upcomingRides : pastRides;
+            const isPast = type === 'past';
+            
+            // Format the date and time
+            const rideDate = new Date(ride.date);
+            const formattedDate = rideDate.toLocaleDateString('en-IN', {
+                    day: 'numeric',
+                month: 'short',
+                    year: 'numeric'
+                });
+            
+            const today = new Date();
+            today.setHours(0, 0, 0, 0);
+            const isToday = rideDate.toDateString() === today.toDateString();
+            
+            let statusBadge = '';
+            if (isToday) {
+                statusBadge = '<span class="bg-green-100 text-green-800 text-xs font-medium px-2.5 py-0.5 rounded">Today</span>';
+            } else if (!isPast) {
+                statusBadge = '<span class="bg-blue-100 text-blue-800 text-xs font-medium px-2.5 py-0.5 rounded">Upcoming</span>';
+            } else {
+                statusBadge = '<span class="bg-gray-100 text-gray-800 text-xs font-medium px-2.5 py-0.5 rounded">Completed</span>';
+            }
+            
+            let timeFormatted = ride.time || '';
+            if (timeFormatted) {
+                try {
+                    // Convert to Indian time format (12-hour)
+                    const [hours, minutes] = timeFormatted.split(':');
+                    const hour = parseInt(hours);
+                    const ampm = hour >= 12 ? 'PM' : 'AM';
+                    const hour12 = hour % 12 || 12;
+                    timeFormatted = `${hour12}:${minutes} ${ampm}`;
+                } catch (error) {
+                    console.error('Error formatting time:', error);
+                    timeFormatted = ride.time; // Use original time if formatting fails
+                }
+            }
+            
+            // Create card
+            const card = document.createElement('div');
+            card.className = `bg-white rounded-xl shadow-sm overflow-hidden ${isPast ? 'opacity-75' : ''}`;
+            card.dataset.id = ride.id;
+            card.dataset.role = role;
+            
+            // Card content
+            card.innerHTML = `
+                <div class="p-6">
+                <div class="flex items-center justify-between mb-4">
+                    <div class="flex items-center space-x-2">
+                            ${statusBadge}
+                            <span class="text-sm text-gray-600">${formattedDate}, ${timeFormatted}</span>
+                        </div>
+                        <span class="font-medium">₹${ride.price}</span>
+                </div>
+
+                <div class="space-y-3">
+                    <div class="flex items-start">
+                            <i class="fas fa-circle text-green-600 mt-1.5 mr-2 text-[10px]"></i>
+                        <div>
+                                <p class="font-medium">${ride.startingPoint}</p>
+                                <p class="text-sm text-gray-600">Pickup: Bennett University</p>
+                        </div>
+                    </div>
+                    <div class="flex items-start">
+                            <i class="fas fa-circle text-red-600 mt-1.5 mr-2 text-[10px]"></i>
+                        <div>
+                                <p class="font-medium">${ride.destination}</p>
+                                <p class="text-sm text-gray-600">Drop: ${ride.destination}</p>
+                        </div>
+                    </div>
+                    </div>
+
+                    ${ride.bookings && ride.bookings.length > 0 ? `
+                        <div class="mt-4 pt-4 border-t border-gray-200">
+                            <h4 class="font-medium mb-2">Ride Requests</h4>
+                            <div class="space-y-2">
+                                ${Object.values(ride.bookings).map(booking => `
+                                    <div class="flex items-center justify-between bg-gray-50 p-3 rounded-lg">
+                                        <div class="flex items-center space-x-3">
+                                            <div>
+                                                <p class="font-medium">${booking.passengerName}</p>
+                                                <p class="text-sm text-gray-600">
+                                                    Status: 
+                                                    <span class="${
+                                                        booking.status === 'pending' ? 'text-yellow-600' :
+                                                        booking.status === 'approved' ? 'text-green-600' :
+                                                        'text-red-600'
+                                                    }">
+                                                        ${booking.status.charAt(0).toUpperCase() + booking.status.slice(1)}
+                                                    </span>
+                                                </p>
+                                            </div>
+                                        </div>
+                                        <div class="flex items-center gap-2">
+                                            ${booking.status === 'pending' ? `
+                                                <button onclick="handleRequest('${booking.id}', '${ride.id}')" 
+                                                        class="text-green-600 hover:text-green-700 font-medium">
+                                                    View Request
+                                                </button>
+                                            ` : booking.status === 'approved' ? `
+                                                <button onclick="showContactInfo('${booking.passengerId}', '${booking.passengerName}')" 
+                                                        class="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition-colors">
+                                                    <i class="fab fa-whatsapp mr-2"></i>Contact
+                                                </button>
+                                            ` : ''}
+                                        </div>
+                                    </div>
+                                `).join('')}
+                            </div>
+                        </div>
+                    ` : ''}
+                    
+                    ${!isPast && ride.availableSeats > 0 ? `
+                        <div class="mt-4 pt-4 border-t border-gray-200">
+                            <div class="flex items-center justify-between">
+                                <div class="flex items-center space-x-2">
+                                    <i class="fas fa-users text-gray-400"></i>
+                                    <span class="text-sm text-gray-600">${ride.availableSeats} seats available</span>
+                                </div>
+                            </div>
+                        </div>
+                    ` : ''}
+                </div>
+            `;
+            
+            // Card footer
+            const footer = document.createElement('div');
+            footer.className = 'mt-4 pt-4 border-t';
+            
+            if (role === 'driver') {
+                // As driver
+                footer.innerHTML = `
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center space-x-4">
+                            <button class="view-passengers-btn text-sm text-gray-600 flex items-center">
+                                <i class="fas fa-users mr-1"></i>
+                                <span>View Passengers</span>
+                            </button>
+                        </div>
+                        <div class="flex space-x-2">
+                            ${!isPast ? `
+                                <button class="view-requests-btn px-3 py-1 text-sm border border-gray-300 rounded-lg hover:bg-gray-50">
+                                    <i class="fas fa-bell mr-1"></i>Requests
+                                </button>
+                                <button class="cancel-ride-btn px-3 py-1 text-sm text-red-600 border border-red-200 rounded-lg hover:bg-red-50">
+                                    Cancel
+                                </button>
+                            ` : `
+                                <button class="view-ride-details-btn px-3 py-1 text-sm border border-gray-300 rounded-lg hover:bg-gray-50">
+                                    Details
+                                </button>
+                            `}
+                        </div>
+                    </div>
+                `;
+            } else {
+                // As passenger
+                const otherPersonName = role === 'passenger' ? ride.driverName : ride.passengerName;
+                
+                footer.innerHTML = `
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center space-x-3">
+                            <div>
+                                <p class="font-medium">${otherPersonName}</p>
+                            </div>
+                        </div>
+                        <div class="flex space-x-2">
+                            ${!isPast ? `
+                                <button class="contact-btn px-3 py-1 text-sm border border-gray-300 rounded-lg hover:bg-gray-50">
+                                    <i class="fas fa-phone-alt mr-1"></i>Contact
+                                </button>
+                                <button class="cancel-booking-btn px-3 py-1 text-sm text-red-600 border border-red-200 rounded-lg hover:bg-red-50">
+                                    Cancel
+                                </button>
+                            ` : `
+                                <button class="rate-ride-btn px-3 py-1 text-sm border border-gray-300 rounded-lg hover:bg-gray-50">
+                                    Rate Ride
+                                </button>
+                            `}
+                        </div>
+                    </div>
+                `;
+            }
+            
+            card.appendChild(footer);
+            container.appendChild(card);
+            
+            // Add event listeners
+            if (role === 'driver') {
+                // View passengers button
+                const viewPassengersBtn = card.querySelector('.view-passengers-btn');
+                if (viewPassengersBtn) {
+                    viewPassengersBtn.addEventListener('click', () => {
+                        showPassengers(ride.id);
+                    });
+                }
+                
+                // View requests button
+                const viewRequestsBtn = card.querySelector('.view-requests-btn');
+                if (viewRequestsBtn) {
+                    viewRequestsBtn.addEventListener('click', () => {
+                        showRequests(ride.id);
+                    });
+                }
+                
+                // Cancel ride button
+                const cancelRideBtn = card.querySelector('.cancel-ride-btn');
+                if (cancelRideBtn) {
+                    cancelRideBtn.addEventListener('click', () => {
+                        cancelRide(ride.id);
+                    });
+                }
+                // Contact button for driver to contact passenger
+                const contactBtn = card.querySelector('.contact-btn');
+                if (contactBtn) {
+                    contactBtn.addEventListener('click', async () => {
+                        // Show WhatsApp modal for passenger
+                        showContactInfo(ride.passengerId, ride.passengerName);
+                    });
+                }
+            } else {
+                // Contact button for passenger to contact driver
+                const contactBtn = card.querySelector('.contact-btn');
+                if (contactBtn) {
+                    contactBtn.addEventListener('click', async () => {
+                        // Show WhatsApp modal for driver
+                        showContactInfo(ride.driverId, ride.driverName);
+                    });
+                }
+                // Cancel booking button
+                const cancelBookingBtn = card.querySelector('.cancel-booking-btn');
+                if (cancelBookingBtn) {
+                    cancelBookingBtn.addEventListener('click', () => {
+                        cancelBooking(ride.id);
+                    });
+                }
+            }
+        }
+        
+        // Show passengers for a ride
+        async function showPassengers(rideId) {
+            try {
+                // Show modal with loading state
+                passengersModal.classList.remove('hidden');
+                
+                // Get ride bookings
+                const bookings = await getRideBookings(rideId);
+                
+                // Filter approved bookings
+                const approvedBookings = bookings.filter(booking => booking.status === 'approved');
+                
+                // Create content
+                if (approvedBookings.length === 0) {
+                    passengersContent.innerHTML = `
+                        <div class="text-center py-6">
+                            <i class="fas fa-users text-gray-400 text-4xl mb-4"></i>
+                            <h3 class="text-lg font-medium text-gray-900 mb-2">No passengers yet</h3>
+                            <p class="text-gray-600">No one has joined your ride yet.</p>
+                        </div>
+                    `;
+                } else {
+                    passengersContent.innerHTML = `
+                        <div class="space-y-4">
+                            ${approvedBookings.map(booking => `
+                                <div class="flex items-center justify-between border-b pb-4">
+                                    <div class="flex items-center space-x-3">
+                                        <div>
+                                            <p class="font-medium">${booking.passengerName}</p>
+                                            <p class="text-sm text-gray-600">Booking ID: ${booking.id.substring(0, 8)}</p>
+                                        </div>
+                                    </div>
+                                    <button class="contact-passenger-btn px-3 py-1 text-sm border border-gray-300 rounded-lg hover:bg-gray-50" data-passenger-id="${booking.passengerId}">
+                                        <i class="fas fa-phone-alt mr-1"></i>Contact
+                                    </button>
+                                </div>
+                            `).join('')}
+                        </div>
+                    `;
+                    
+                    // Add event listeners to contact buttons
+                    document.querySelectorAll('.contact-passenger-btn').forEach(button => {
+                        button.addEventListener('click', async () => {
+                            const passengerId = button.getAttribute('data-passenger-id');
+                            const passengerName = button.closest('.flex.items-center.justify-between').querySelector('.font-medium').textContent;
+                            // Open WhatsApp modal for passenger
+                            showContactInfo(passengerId, passengerName);
+                        });
+                    });
+                }
+            } catch (error) {
+                console.error('Error showing passengers:', error);
+                
+                passengersContent.innerHTML = `
+                    <div class="text-center py-6">
+                        <i class="fas fa-exclamation-circle text-red-500 text-4xl mb-4"></i>
+                        <h3 class="text-lg font-medium text-gray-900 mb-2">Error loading passengers</h3>
+                        <p class="text-gray-600">Something went wrong. Please try again.</p>
+                    </div>
+                `;
+            }
+        }
+        
+        // Show booking requests for a ride
+        async function showRequests(rideId) {
+            try {
+                // Show modal with loading state
+                requestsModal.classList.remove('hidden');
+                
+                // Get ride bookings
+                const bookings = await getRideBookings(rideId);
+                
+                // Filter pending bookings
+                const pendingBookings = bookings.filter(booking => booking.status === 'pending');
+                
+                // Create content
+                if (pendingBookings.length === 0) {
+                    requestsContent.innerHTML = `
+                        <div class="text-center py-6">
+                            <i class="fas fa-bell text-gray-400 text-4xl mb-4"></i>
+                            <h3 class="text-lg font-medium text-gray-900 mb-2">No pending requests</h3>
+                            <p class="text-gray-600">You don't have any pending ride requests.</p>
+                        </div>
+                    `;
+                } else {
+                    requestsContent.innerHTML = `
+                        <div class="space-y-4">
+                            ${pendingBookings.map(booking => `
+                                <div class="flex items-center justify-between border-b pb-4" data-booking-id="${booking.id}">
+                                    <div class="flex items-center space-x-3">
+                                        <div>
+                                            <p class="font-medium">${booking.passengerName}</p>
+                                            <p class="text-sm text-gray-600">Requested to join your ride</p>
+                                        </div>
+                                    </div>
+                                    <div class="flex space-x-2">
+                                        <button class="approve-request-btn px-3 py-1 text-sm bg-green-600 text-white rounded-lg hover:bg-green-700">
+                                            Approve
+                                        </button>
+                                        <button class="decline-request-btn px-3 py-1 text-sm border border-gray-300 rounded-lg hover:bg-gray-50">
+                                            Decline
+                                        </button>
+                                    </div>
+                                </div>
+                            `).join('')}
+                        </div>
+                    `;
+                    
+                    // Add event listeners to buttons
+                    document.querySelectorAll('.approve-request-btn').forEach(button => {
+                        button.addEventListener('click', function() {
+                            const bookingId = this.closest('[data-booking-id]').dataset.bookingId;
+                            approveRequest(bookingId, rideId);
+                        });
+                    });
+                    
+                    document.querySelectorAll('.decline-request-btn').forEach(button => {
+                        button.addEventListener('click', function() {
+                            const bookingId = this.closest('[data-booking-id]').dataset.bookingId;
+                            declineRequest(bookingId);
+                        });
+                    });
+                }
+            } catch (error) {
+                console.error('Error showing requests:', error);
+                
+                requestsContent.innerHTML = `
+                    <div class="text-center py-6">
+                        <i class="fas fa-exclamation-circle text-red-500 text-4xl mb-4"></i>
+                        <h3 class="text-lg font-medium text-gray-900 mb-2">Error loading requests</h3>
+                        <p class="text-gray-600">Something went wrong. Please try again.</p>
+                    </div>
+                `;
+            }
+        }
+        
+        // Approve a booking request
+        async function approveRequest(bookingId, rideId) {
+            try {
+                // Update booking status
+                await updateBookingStatus(bookingId, 'approved');
+                
+                // Update ride available seats
+                const ride = await getRide(rideId);
+                if (ride.availableSeats > 0) {
+                    await updateRide(rideId, {
+                        availableSeats: ride.availableSeats - 1
+                    });
+                }
+                
+                // Remove the request from the list
+                const requestElement = document.querySelector(`[data-booking-id="${bookingId}"]`);
+                if (requestElement) {
+                    requestElement.remove();
+                }
+                
+                // Check if there are no more requests
+                if (requestsContent.querySelectorAll('[data-booking-id]').length === 0) {
+                    requestsContent.innerHTML = `
+                        <div class="text-center py-6">
+                            <i class="fas fa-bell text-gray-400 text-4xl mb-4"></i>
+                            <h3 class="text-lg font-medium text-gray-900 mb-2">No pending requests</h3>
+                            <p class="text-gray-600">You don't have any pending ride requests.</p>
+                        </div>
+                    `;
+                }
+                
+                // Show success message
+                alert('Booking request approved successfully!');
+            } catch (error) {
+                console.error('Error approving request:', error);
+                alert('Failed to approve request. Please try again.');
+            }
+        }
+        
+        // Decline a booking request
+        async function declineRequest(bookingId) {
+            try {
+                // Update booking status
+                await updateBookingStatus(bookingId, 'declined');
+                
+                // Remove the request from the list
+                const requestElement = document.querySelector(`[data-booking-id="${bookingId}"]`);
+                if (requestElement) {
+                    requestElement.remove();
+                }
+                
+                // Check if there are no more requests
+                if (requestsContent.querySelectorAll('[data-booking-id]').length === 0) {
+                    requestsContent.innerHTML = `
+                        <div class="text-center py-6">
+                            <i class="fas fa-bell text-gray-400 text-4xl mb-4"></i>
+                            <h3 class="text-lg font-medium text-gray-900 mb-2">No pending requests</h3>
+                            <p class="text-gray-600">You don't have any pending ride requests.</p>
+                        </div>
+                    `;
+                }
+                
+                // Show success message
+                alert('Booking request declined.');
+            } catch (error) {
+                console.error('Error declining request:', error);
+                alert('Failed to decline request. Please try again.');
+            }
+        }
+        
+        // Cancel a ride
+        async function cancelRide(rideId) {
+            if (confirm('Are you sure you want to cancel this ride? This action cannot be undone.')) {
+                try {
+                    // Update ride status
+                    await updateRide(rideId, {
+                        status: 'cancelled'
+                    });
+                    
+                    // Remove the ride card
+                    const rideCard = document.querySelector(`[data-id="${rideId}"]`);
+                    if (rideCard) {
+                        rideCard.remove();
+                    }
+                    
+                    // Check if there are no more upcoming rides
+                    if (upcomingRides.querySelectorAll('.bg-white').length === 0) {
+                        noUpcomingRidesMessage.classList.remove('hidden');
+                    }
+                    
+                    // Show success message
+                    alert('Ride cancelled successfully.');
+                } catch (error) {
+                    console.error('Error cancelling ride:', error);
+                    alert('Failed to cancel ride. Please try again.');
+                }
+            }
+        }
+        
+        // Cancel a booking
+        async function cancelBooking(bookingId) {
+            if (confirm('Are you sure you want to cancel this booking? This action cannot be undone.')) {
+                try {
+                    // Update booking status
+                    await updateBookingStatus(bookingId, 'cancelled');
+                    
+                    // Remove the booking card
+                    const bookingCard = document.querySelector(`[data-id="${bookingId}"]`);
+                    if (bookingCard) {
+                        bookingCard.remove();
+                    }
+                    
+                    // Check if there are no more upcoming rides
+                    if (upcomingRides.querySelectorAll('.bg-white').length === 0) {
+                        noUpcomingRidesMessage.classList.remove('hidden');
+                    }
+                    
+                    // Show success message
+                    alert('Booking cancelled successfully.');
+                } catch (error) {
+                    console.error('Error cancelling booking:', error);
+                    alert('Failed to cancel booking. Please try again.');
+                }
+            }
+        }
+        
+        // Close modals
+        closePassengersBtn.addEventListener('click', () => {
+            passengersModal.classList.add('hidden');
+        });
+        
+        closeRequestsBtn.addEventListener('click', () => {
+            requestsModal.classList.add('hidden');
+        });
+        
+        // Close modals when clicking outside
+        passengersModal.addEventListener('click', (e) => {
+            if (e.target === passengersModal) {
+                passengersModal.classList.add('hidden');
+            }
+        });
+        
+        requestsModal.addEventListener('click', (e) => {
+            if (e.target === requestsModal) {
+                requestsModal.classList.add('hidden');
+            }
+        });
+
+        window.showContactInfo = async function(userId, userName) {
+            try {
+                const userProfile = await getUserProfile(userId);
+                if (userProfile && userProfile.phoneNumber) {
+                    const modal = document.createElement('div');
+                    modal.className = 'fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50';
+                    // Always use wa.me/91<phone> for WhatsApp link, but avoid double 91
+                    let phone = userProfile.phoneNumber.replace(/[^0-9]/g, '');
+                    if (phone.startsWith('91') && phone.length > 10) {
+                        phone = phone.slice(2);
+                    }
+                    const whatsappLink = `https://wa.me/91${phone}`;
+                    modal.innerHTML = `
+                        <div class="bg-white rounded-xl max-w-md w-full mx-4 p-6">
+                            <div class="text-center">
+                                <div class="mb-4">
+                                    <img src="${userProfile.profilePhoto || 'https://api.dicebear.com/7.x/initials/svg?seed=' + userName}" 
+                                         alt="" 
+                                         class="w-16 h-16 rounded-full mx-auto mb-2 object-cover">
+                                    <p class="font-medium text-lg">${userName}</p>
+                                    <p class="text-green-600 text-xl font-bold mt-2">
+                                        <i class="fab fa-whatsapp mr-2"></i>${userProfile.phoneNumber}
+                                    </p>
+                                </div>
+                                <div class="flex flex-col items-center space-y-2">
+                                    <a href="tel:${userProfile.phoneNumber}" 
+                                       class="bg-gray-200 text-gray-800 px-6 py-2 rounded-lg hover:bg-gray-300 transition-colors flex items-center justify-center w-full mb-2">
+                                        <i class="fas fa-phone-alt mr-2"></i>Call
+                                    </a>
+                                    <a href="${whatsappLink}" 
+                                       target="_blank"
+                                       class="bg-green-600 text-white px-6 py-2 rounded-lg hover:bg-green-700 transition-colors flex items-center justify-center w-full">
+                                        <i class="fab fa-whatsapp mr-2"></i>Chat on WhatsApp
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+
+                    modal.addEventListener('click', (e) => {
+                        if (e.target === modal) {
+                            modal.remove();
+                        }
+                    });
+
+                    document.body.appendChild(modal);
+                } else {
+                    alert('Contact information not available. Please ask the user to update their profile.');
+                }
+            } catch (error) {
+                console.error('Error showing contact info:', error);
+                alert('Unable to fetch contact information. Please try again.');
+            }
+        };
+
+        // Listen for new bookings (for drivers)
+        function listenForNewBookings(driverId) {
+            const bookingsRef = ref(database, 'bookings');
+            onChildAdded(bookingsRef, (snapshot) => {
+                const booking = snapshot.val();
+                // Notify driver when a new booking request is sent
+                if (booking.driverId === driverId && booking.status === 'pending') {
+                    showNotification(`New booking request from ${booking.passengerName}`);
+                }
+            });
+        }
+
+        // Listen for booking status changes (for passengers)
+        function listenForBookingStatusChanges(passengerId) {
+            const bookingsRef = ref(database, 'bookings');
+            onChildChanged(bookingsRef, (snapshot) => {
+                const booking = snapshot.val();
+                // Notify passenger when their booking is approved
+                if (booking.passengerId === passengerId && booking.status === 'approved') {
+                    showNotification(`Your booking for ride to ${booking.destination} has been approved!`);
+                }
+            });
+        }
+
+        function showNotification(message) {
+            // You can use a toast, modal, or any UI element
+            alert(message); // For demo, use alert. Replace with your own UI!
+        }
+    </script>
+
+    <script>
+    // Function to load profile image from Untitled-4
+    async function loadProfileImage() {
+        try {
+            const currentUser = await getCurrentUser();
+            if (currentUser) {
+                const userProfile = await getUserProfile(currentUser.uid);
+                if (userProfile && userProfile.profileImage) {
+                    // Update all passenger images that don't have a custom photo
+                    const defaultImages = document.querySelectorAll('.passenger-image[src*="dicebear"]');
+                    defaultImages.forEach(img => {
+                        img.src = userProfile.profileImage;
+                    });
+                }
+            }
+        } catch (error) {
+            console.error('Error loading profile image:', error);
+        }
+    }
+
+    // Load profile image when page loads
+    document.addEventListener('DOMContentLoaded', loadProfileImage);
+    </script>
+</body>
+
+</html

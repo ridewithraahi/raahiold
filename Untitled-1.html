@@ -1,0 +1,1147 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Find a Ride - Raahi</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            padding-bottom: 4rem;
+        }
+        
+        .bottom-nav-item.active {
+            color: #000;
+        }
+        
+        .loading-spinner {
+            display: inline-block;
+            border: 3px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            border-top: 3px solid #fff;
+            width: 20px;
+            height: 20px;
+            animation: spin 1s linear infinite;
+        }
+        
+        .request-ride-btn .loading-spinner {
+            display: inline-block;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .skeleton {
+            background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+            background-size: 200% 100%;
+            animation: loading 1.5s infinite;
+            will-change: background-position;
+        }
+        
+        @keyframes loading {
+            0% {
+                background-position: 200% 0;
+            }
+            100% {
+                background-position: -200% 0;
+            }
+        }
+        
+        .ride-card {
+            transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out, opacity 0.3s ease;
+            will-change: transform, opacity;
+            opacity: 0;
+            animation: fadeIn 0.5s ease forwards;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .ride-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+        }
+        
+        /* Add staggered animation for multiple cards */
+        .ride-card:nth-child(1) { animation-delay: 0.05s; }
+        .ride-card:nth-child(2) { animation-delay: 0.1s; }
+        .ride-card:nth-child(3) { animation-delay: 0.15s; }
+        .ride-card:nth-child(4) { animation-delay: 0.2s; }
+        .ride-card:nth-child(5) { animation-delay: 0.25s; }
+        
+        /* Optimize rendering performance */
+        * {
+            text-rendering: optimizeSpeed;
+        }
+        
+        .no-icon::before,
+        .no-icon::after {
+            display: none !important;
+            content: none !important;
+        }
+        
+        .no-icon i {
+            display: none !important;
+        }
+    </style>
+</head>
+
+<body class="bg-gray-50 min-h-screen">
+    <!-- Header -->
+    <header class="bg-white shadow-sm">
+        <div class="container mx-auto px-4 py-4">
+            <h1 class="text-2xl font-bold text-gray-900">Find a Ride</h1>
+            <p class="text-gray-600">Join a journey with fellow students</p>
+        </div>
+    </header>
+    
+    <!-- Firebase Rules Warning Banner -->
+    <div id="firebaseRulesWarning" class="bg-yellow-50 border-l-4 border-yellow-400 p-4 mb-4 mx-4 rounded shadow-sm hidden">
+        <div class="flex">
+            <div class="flex-shrink-0">
+                <i class="fas fa-exclamation-triangle text-yellow-400"></i>
+            </div>
+            <div class="ml-3">
+                <p class="text-sm text-yellow-700">
+                    <strong>Firebase Rules Warning:</strong> The app is using local storage due to Firebase security rules.
+                    <a href="#" id="rulesInfoLink" class="font-medium underline text-yellow-700 hover:text-yellow-600">
+                        Learn more
+                    </a>
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Search Section -->
+    <div class="container mx-auto px-4 py-6">
+        <div class="bg-white rounded-xl shadow-sm p-6 mb-6">
+            <form id="searchForm" class="space-y-4">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">From</label>
+                    <div class="relative">
+                        <i class="fas fa-map-marker-alt absolute left-3 top-3 text-gray-400"></i>
+                        <input type="text" id="startingPoint" placeholder="Where are you starting from?" class="pl-10 block w-full rounded-lg border-gray-300 border p-2.5 focus:ring-2 focus:ring-green-500 focus:border-green-500">
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">To</label>
+                    <div class="relative">
+                        <i class="fas fa-map-marker absolute left-3 top-3 text-gray-400"></i>
+                        <input type="text" id="destination" placeholder="Where are you going?" class="pl-10 block w-full rounded-lg border-gray-300 border p-2.5 focus:ring-2 focus:ring-green-500 focus:border-green-500">
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">When</label>
+                    <div class="relative">
+                        <i class="fas fa-calendar absolute left-3 top-3 text-gray-400"></i>
+                        <input type="date" id="rideDate" class="pl-10 block w-full rounded-lg border-gray-300 border p-2.5 focus:ring-2 focus:ring-green-500 focus:border-green-500">
+                    </div>
+                </div>
+
+                <button type="submit" id="searchButton" class="w-full bg-green-600 text-white py-3 rounded-lg font-semibold hover:bg-green-700 transition duration-200 flex items-center justify-center">
+                    <i class="fas fa-search mr-2"></i>
+                    <span>Search Rides</span>
+                    <div id="searchSpinner" class="loading-spinner ml-2 hidden"></div>
+                </button>
+            </form>
+        </div>
+
+        <!-- Available Rides -->
+        <div class="space-y-4">
+            <div class="flex justify-between items-center">
+                <h2 class="text-lg font-semibold">Available Rides</h2>
+                <div id="filterOptions" class="flex space-x-2">
+                    <button id="filterAll" class="text-sm px-3 py-1 rounded-full bg-green-600 text-white">All</button>
+                    <button id="filterToday" class="text-sm px-3 py-1 rounded-full bg-gray-200 text-gray-700">Today</button>
+                    <button id="filterTomorrow" class="text-sm px-3 py-1 rounded-full bg-gray-200 text-gray-700">Tomorrow</button>
+                </div>
+            </div>
+
+            <div id="ridesContainer" class="space-y-4">
+                <!-- Loading skeletons -->
+                <div class="skeleton-item bg-white rounded-xl shadow-sm p-6">
+                    <div class="flex justify-between items-start mb-4">
+                        <div class="flex-1">
+                            <div class="flex items-center space-x-3 mb-2">
+                                <div class="w-10 h-10 rounded-full skeleton"></div>
+                                <div>
+                                    <div class="h-5 w-32 skeleton mb-2"></div>
+                                    <div class="h-4 w-24 skeleton"></div>
+                                </div>
+                            </div>
+                            <div class="space-y-2 mt-2">
+                                <div class="h-4 w-40 skeleton"></div>
+                                <div class="h-4 w-48 skeleton"></div>
+                            </div>
+                        </div>
+                        <div class="h-6 w-12 skeleton"></div>
+                    </div>
+                    <div class="flex items-center justify-between mb-4">
+                        <div class="h-4 w-24 skeleton"></div>
+                        <div class="h-4 w-24 skeleton"></div>
+                        <div class="h-4 w-24 skeleton"></div>
+                    </div>
+                    <div class="h-10 w-full skeleton rounded-lg"></div>
+                </div>
+                
+                <div class="skeleton-item bg-white rounded-xl shadow-sm p-6">
+                    <div class="flex justify-between items-start mb-4">
+                        <div class="flex-1">
+                            <div class="flex items-center space-x-3 mb-2">
+                                <div class="w-10 h-10 rounded-full skeleton"></div>
+                                <div>
+                                    <div class="h-5 w-32 skeleton mb-2"></div>
+                                    <div class="h-4 w-24 skeleton"></div>
+                                </div>
+                            </div>
+                            <div class="space-y-2 mt-2">
+                                <div class="h-4 w-40 skeleton"></div>
+                                <div class="h-4 w-48 skeleton"></div>
+                            </div>
+                        </div>
+                        <div class="h-6 w-12 skeleton"></div>
+                    </div>
+                    <div class="flex items-center justify-between mb-4">
+                        <div class="h-4 w-24 skeleton"></div>
+                        <div class="h-4 w-24 skeleton"></div>
+                        <div class="h-4 w-24 skeleton"></div>
+                    </div>
+                    <div class="h-10 w-full skeleton rounded-lg"></div>
+                </div>
+
+                <!-- No Rides Message (Initially Hidden) -->
+                <div id="noRidesMessage" class="hidden bg-white rounded-xl shadow-sm p-6 text-center">
+                    <i class="fas fa-car-side text-gray-400 text-4xl mb-4"></i>
+                    <h3 class="text-lg font-medium text-gray-900 mb-2">No rides available</h3>
+                    <p class="text-gray-600">No one is going your way yet. Be the first to post a ride!</p>
+                    <a href="Untitled-2.html" class="inline-block mt-4 text-green-600 font-medium hover:text-green-700">
+                        Post a Ride
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Ride Details Modal (Hidden by default) -->
+    <div id="rideDetailsModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden">
+        <div class="bg-white rounded-xl max-w-md w-full mx-4">
+            <div class="p-4 border-b border-gray-200 flex justify-between items-center">
+                <h3 class="text-xl font-semibold">Ride Details</h3>
+                <button id="closeModalBtn" class="text-gray-500 hover:text-gray-700">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="p-6">
+                <!-- Driver Info -->
+                <div class="flex items-center space-x-4 mb-6">
+                    <img id="modalDriverImage" class="w-16 h-16 rounded-full object-cover" src="" alt="Driver">
+                        <div>
+                        <h4 id="modalDriverName" class="text-lg font-semibold"></h4>
+                        </div>
+                    </div>
+
+                <!-- Ride Details -->
+                <div class="space-y-4">
+                    <div class="bg-gray-50 p-4 rounded-lg">
+                        <p class="text-sm text-gray-600 mb-1">Route</p>
+                        <p id="modalRoute" class="font-medium"></p>
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-4">
+                        <div class="bg-gray-50 p-4 rounded-lg">
+                            <p class="text-sm text-gray-600 mb-1">Date</p>
+                            <p id="modalDate" class="font-medium"></p>
+                </div>
+                        <div class="bg-gray-50 p-4 rounded-lg">
+                            <p class="text-sm text-gray-600 mb-1">Time</p>
+                            <p id="modalTime" class="font-medium"></p>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-4">
+                        <div class="bg-gray-50 p-4 rounded-lg">
+                            <p class="text-sm text-gray-600 mb-1">Available Seats</p>
+                            <p id="modalSeats" class="font-medium"></p>
+                        </div>
+                        <div class="bg-gray-50 p-4 rounded-lg">
+                            <p class="text-sm text-gray-600 mb-1">Price per Seat</p>
+                            <p id="modalPrice" class="font-medium"></p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="p-4 border-t border-gray-200">
+                <button id="requestRideBtn" class="w-full bg-green-600 text-white py-3 rounded-lg font-semibold hover:bg-green-700 transition duration-200">
+                    Request Ride
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bottom Navigation -->
+    <nav class="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200">
+        <div class="flex justify-around items-center h-16">
+            <a href="Untitled-5.html" class="bottom-nav-item flex flex-col items-center text-sm text-gray-600">
+                <i class="fas fa-home text-xl mb-1"></i>
+                <span>Home</span>
+            </a>
+            <a href="Untitled-1.html" class="bottom-nav-item active flex flex-col items-center text-sm">
+                <i class="fas fa-search text-xl mb-1"></i>
+                <span>Find</span>
+            </a>
+            <a href="Untitled-2.html" class="bottom-nav-item flex flex-col items-center text-sm text-gray-600">
+                <i class="fas fa-car text-xl mb-1"></i>
+                <span>Offer</span>
+            </a>
+            <div class="no-icon bottom-nav-item flex items-center justify-center h-16" style="background: none !important;">
+                <a href="Untitled-9.html" class="no-icon text-sm text-gray-600" style="background: none !important;">My Rides</a>
+            </div>
+            <a href="Untitled-4.html" class="bottom-nav-item flex flex-col items-center text-sm text-gray-600">
+                <i class="fas fa-user text-xl mb-1"></i>
+                <span>Profile</span>
+            </a>
+        </div>
+    </nav>
+
+    <!-- Firebase SDK -->
+    <script type="module">
+        // Import Firebase functions
+        import { 
+            getCurrentUser, 
+            getUserProfile, 
+            getActiveRides,
+            getRide,
+            getUserBookings,
+            createBooking
+        } from './firebase.js';
+        
+        // Import performance optimizations
+        import {
+            performanceCache,
+            initializePage,
+            loadProgressively,
+            applyPerformanceOptimizations
+        } from './performance.js';
+
+        // DOM Elements
+        const searchForm = document.getElementById('searchForm');
+        const destination = document.getElementById('destination');
+        const rideDate = document.getElementById('rideDate');
+        const searchButton = document.getElementById('searchButton');
+        const searchSpinner = document.getElementById('searchSpinner');
+        const ridesContainer = document.getElementById('ridesContainer');
+        const noRidesMessage = document.getElementById('noRidesMessage');
+        const filterAll = document.getElementById('filterAll');
+        const filterToday = document.getElementById('filterToday');
+        const filterTomorrow = document.getElementById('filterTomorrow');
+        const rideDetailsModal = document.getElementById('rideDetailsModal');
+        const closeModalBtn = document.getElementById('closeModalBtn');
+        const requestRideBtn = document.getElementById('requestRideBtn');
+        
+        // Set minimum date to today
+        const today = new Date();
+        const yyyy = today.getFullYear();
+        const mm = String(today.getMonth() + 1).padStart(2, '0');
+        const dd = String(today.getDate()).padStart(2, '0');
+        rideDate.min = `${yyyy}-${mm}-${dd}`;
+        
+        // Check if user is logged in
+        let currentUser = null;
+        let userProfile = null;
+        let allRides = [];
+        let userBookings = [];
+        let currentRideId = null;
+        
+        // Check if Firebase rules are properly configured
+        async function checkFirebaseRules(dbFunctions) {
+            try {
+                console.log('Checking Firebase rules configuration...');
+                
+                // Import Firebase app if needed
+                const { initializeApp } = await import("https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js");
+                
+                // Get the Firebase config from the firebase.js module
+                const { default: firebaseConfig } = await import('./firebase.js').then(module => {
+                    // Extract the config from the module
+                    return { default: { 
+                        apiKey: "AIzaSyA8PyYrGfsODSEYqhbeBP-CJE7UxEy83TE",
+                        authDomain: "raahi-2b943.firebaseapp.com",
+                        databaseURL: "https://raahi-2b943-default-rtdb.firebaseio.com",
+                        projectId: "raahi-2b943",
+                        storageBucket: "raahi-2b943.firebasestorage.app",
+                        messagingSenderId: "1058938218048",
+                        appId: "1:1058938218048:web:c3682e8bab8217b28561a5"
+                    }};
+                });
+                
+                // Initialize a temporary app instance for testing
+                const tempApp = initializeApp(firebaseConfig, "rulesCheck");
+                const tempDb = getDatabase(tempApp);
+                
+                // Try to query rides with the status index
+                const testQuery = query(
+                    ref(tempDb, 'rides'),
+                    orderByChild('status'),
+                    equalTo('active')
+                );
+                
+                try {
+                    await get(testQuery);
+                    console.log('Firebase rules are properly configured');
+                    return true;
+                } catch (queryError) {
+                    if (queryError.message && queryError.message.includes('Index not defined')) {
+                        console.warn('Firebase rules are not properly configured:', queryError.message);
+                        
+                        // Show warning banner
+                        const warningBanner = document.getElementById('firebaseRulesWarning');
+                        if (warningBanner) {
+                            warningBanner.classList.remove('hidden');
+                            
+                            // Add event listener to the info link
+                            const rulesInfoLink = document.getElementById('rulesInfoLink');
+                            if (rulesInfoLink) {
+                                rulesInfoLink.addEventListener('click', (e) => {
+                                    e.preventDefault();
+                                    alert(`Firebase Rules Fix Required:\n\nThe application is encountering errors related to missing indexes in Firebase Realtime Database. Please update your Firebase rules to include the necessary indexes for 'status' and 'driverId' fields.\n\nCheck the FIREBASE-RULES-FIX.md file for detailed instructions.`);
+                                });
+                            }
+                        }
+                        
+                        return false;
+                    }
+                    return true; // Other errors might not be related to rules
+                }
+            } catch (error) {
+                console.error('Error checking Firebase rules:', error);
+                return true; // Continue anyway
+            }
+        }
+
+        // Initialize with performance optimizations
+        initializePage(async function() {
+            try {
+                console.log('Initializing application with performance optimizations...');
+                
+                // Apply performance optimizations
+                applyPerformanceOptimizations();
+                
+                // Add global event delegation for request buttons
+                document.addEventListener('click', function(e) {
+                    if (e.target && e.target.classList.contains('request-ride-btn') && !e.target.disabled) {
+                        e.stopPropagation();
+                        e.preventDefault();
+                        
+                        const rideId = e.target.getAttribute('data-ride-id');
+                        if (rideId) {
+                            console.log('Global handler: Request button clicked for ride:', rideId);
+                            requestRide(rideId, e.target);
+                        } else {
+                            console.error('Global handler: No ride ID found on button');
+                        }
+                    }
+                });
+                
+                // Import Firebase database reference for rules check
+                const { getDatabase, ref, query, orderByChild, equalTo, get } = await import("https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js");
+                
+                currentUser = await getCurrentUser();
+                if (!currentUser) {
+                    // User is not logged in, redirect to login page
+                    console.log('User not logged in, redirecting to login page');
+                    window.location.href = 'login.html';
+                    return;
+                }
+                
+                // Get user profile
+                userProfile = await getUserProfile(currentUser.uid);
+                if (!userProfile || !(userProfile.profileComplete || userProfile.isProfileComplete)) {
+                    // Profile not complete, redirect to profile completion page
+                    console.log('Profile not complete, redirecting to profile completion page');
+                    window.location.href = 'Untitled-6.html';
+                    return;
+                }
+                
+                // Check Firebase rules configuration
+                await checkFirebaseRules({ getDatabase, ref, query, orderByChild, equalTo, get });
+                
+                // Get user bookings
+                userBookings = await getUserBookings(currentUser.uid);
+                console.log(`Loaded ${userBookings.length} user bookings`);
+                
+                // Check if there's a selected ride from home page
+                const selectedRideId = sessionStorage.getItem('selectedRideId');
+                if (selectedRideId) {
+                    // Clear the session storage
+                    sessionStorage.removeItem('selectedRideId');
+                    
+                    // Show ride details
+                    console.log('Selected ride ID found in session storage:', selectedRideId);
+                    showRideDetails(selectedRideId);
+                } else {
+                    // Load all rides
+                    console.log('Loading all rides...');
+                    await loadRides();
+                }
+            } catch (error) {
+                console.error('Initialization error:', error);
+                alert('There was an error initializing the application. Please try again.');
+                window.location.href = 'login.html';
+            }
+        });
+        
+        // Cache for filtered rides
+        let cachedFilteredRides = null;
+        let lastFilterParams = null;
+        
+        // Load rides with progressive rendering
+        async function loadRides(searchDestination = '', searchDate = '', searchStartingPoint = '') {
+            try {
+                console.log('Loading rides...');
+                
+                // Create a filter parameter string to check if we can use cached results
+                const filterParams = `${searchStartingPoint}|${searchDestination}|${searchDate}`;
+                
+                // Show loading spinner
+                const skeletons = document.querySelectorAll('.skeleton-item');
+                skeletons.forEach(skeleton => skeleton.style.display = 'block');
+                
+                // Hide any previous error messages
+                const noRidesMessage = document.getElementById('noRidesMessage');
+                if (noRidesMessage) {
+                    noRidesMessage.classList.add('hidden');
+                }
+                
+                // Check if we can use cached filtered results
+                if (cachedFilteredRides && lastFilterParams === filterParams) {
+                    console.log('Using cached filtered rides');
+                    
+                    // Remove skeletons after a short delay to avoid flickering
+                    setTimeout(() => {
+                        skeletons.forEach(skeleton => skeleton.style.display = 'none');
+                        
+                        // Display rides
+                        console.log(`Displaying ${cachedFilteredRides.length} cached rides`);
+                        displayRides(cachedFilteredRides);
+                    }, 300);
+                    
+                    return;
+                }
+                
+                // Start fetching rides in the background
+                const ridesPromise = getActiveRides();
+                
+                // Show skeleton loaders for at least 500ms to avoid flickering
+                const minLoadingTime = new Promise(resolve => setTimeout(resolve, 500));
+                
+                // Wait for both the minimum loading time and the rides data
+                const [rides] = await Promise.all([ridesPromise, minLoadingTime]);
+                
+                console.log('Received rides:', rides);
+                
+                // Ensure rides is an array
+                allRides = Array.isArray(rides) ? rides : [];
+                
+                // Filter out user's own rides
+                if (currentUser && currentUser.uid) {
+                    allRides = allRides.filter(ride => ride && ride.driverId !== currentUser.uid);
+                }
+                
+                // Apply search filters if provided
+                let filteredRides = [...allRides];
+                
+                if (searchStartingPoint) {
+                    const searchStartTerm = searchStartingPoint.toLowerCase();
+                    filteredRides = filteredRides.filter(ride => 
+                        ride && ride.startingPoint && ride.startingPoint.toLowerCase().includes(searchStartTerm)
+                    );
+                }
+                
+                if (searchDestination) {
+                    const searchTerm = searchDestination.toLowerCase();
+                    filteredRides = filteredRides.filter(ride => 
+                        ride && ride.destination && ride.destination.toLowerCase().includes(searchTerm)
+                    );
+                }
+                
+                if (searchDate) {
+                    const searchDateObj = new Date(searchDate);
+                    searchDateObj.setHours(0, 0, 0, 0);
+                    
+                    filteredRides = filteredRides.filter(ride => {
+                        if (!ride || !ride.date) return false;
+                        const rideDate = new Date(ride.date);
+                        rideDate.setHours(0, 0, 0, 0);
+                        return rideDate.getTime() === searchDateObj.getTime();
+                    });
+                }
+                
+                // Cache the filtered results
+                cachedFilteredRides = filteredRides;
+                lastFilterParams = filterParams;
+                
+                // Remove skeletons with a smooth transition
+                skeletons.forEach(skeleton => {
+                    skeleton.style.opacity = '0';
+                    setTimeout(() => {
+                        skeleton.style.display = 'none';
+                        skeleton.style.opacity = '1';
+                    }, 300);
+                });
+                
+                // Display rides
+                console.log(`Displaying ${filteredRides.length} rides after filtering`);
+                displayRides(filteredRides);
+            } catch (error) {
+                console.error('Error loading rides:', error);
+                
+                // Remove skeletons
+                const skeletons = document.querySelectorAll('.skeleton-item');
+                skeletons.forEach(skeleton => skeleton.style.display = 'none');
+                
+                // Show error message with more details
+                ridesContainer.innerHTML = `
+                    <div class="bg-white rounded-xl shadow-sm p-6 text-center error-message-container">
+                        <i class="fas fa-exclamation-circle text-red-500 text-4xl mb-4"></i>
+                        <h3 class="text-lg font-medium text-gray-900 mb-2">Error loading rides</h3>
+                        <p class="text-gray-600 mb-2">We encountered a problem while loading available rides.</p>
+                        <p class="text-gray-500 text-sm mb-4">This might be due to Firebase database rules not being properly configured. Please check the Firebase Rules Fix instructions.</p>
+                        <div class="flex flex-col md:flex-row justify-center gap-3">
+                            <button id="retryButton" class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition">
+                                <i class="fas fa-sync-alt mr-2"></i>Retry
+                            </button>
+                            <button id="showFirebaseRulesFixButton" class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition">
+                                <i class="fas fa-info-circle mr-2"></i>Show Fix Instructions
+                            </button>
+                        </div>
+                    </div>
+                `;
+                
+                document.getElementById('retryButton').addEventListener('click', () => {
+                    loadRides(searchDestination, searchDate);
+                });
+                
+                document.getElementById('showFirebaseRulesFixButton').addEventListener('click', () => {
+                    // Show Firebase rules fix modal or alert
+                    alert(`Firebase Rules Fix Required:\n\nThe application is encountering errors related to missing indexes in Firebase Realtime Database. Please update your Firebase rules to include the necessary indexes for 'status' and 'driverId' fields.\n\nCheck the FIREBASE-RULES-FIX.md file for detailed instructions.`);
+                });
+            }
+        }
+        
+        // Cache for driver profiles to avoid repeated fetches
+        const driverProfileCache = {};
+        
+        // Display rides with progressive loading
+        async function displayRides(rides = []) {
+            const ridesContainer = document.getElementById('ridesContainer');
+            
+            // Remove loading skeletons
+            const skeletons = ridesContainer.querySelectorAll('.skeleton-item');
+            skeletons.forEach(skeleton => {
+                skeleton.style.opacity = '0';
+                setTimeout(() => skeleton.remove(), 300);
+            });
+            
+            if (!rides.length) {
+                document.getElementById('noRidesMessage').classList.remove('hidden');
+                return;
+            }
+            
+            // Sort rides by timestamp in descending order (newest first)
+            const sortedRides = rides.sort((a, b) => {
+                const dateA = new Date(a.createdAt || a.date || 0);
+                const dateB = new Date(b.createdAt || b.date || 0);
+                return dateB - dateA;
+            });
+
+            // Clear existing rides
+            const existingRides = ridesContainer.querySelectorAll('.ride-card');
+            existingRides.forEach(ride => ride.remove());
+
+            // Display sorted rides with animation delay
+            sortedRides.forEach((ride, index) => {
+                const rideCard = createRideCard(ride);
+                rideCard.style.animationDelay = `${index * 0.1}s`;
+                ridesContainer.appendChild(rideCard);
+            });
+        }
+        
+        function createRideCard(ride) {
+            const card = document.createElement('div');
+            card.className = 'ride-card bg-white rounded-xl shadow-sm p-6';
+            
+            // Format date
+            const rideDate = new Date(ride.date);
+            const today = new Date();
+            const tomorrow = new Date(today);
+            tomorrow.setDate(tomorrow.getDate() + 1);
+            
+            let dateText;
+            if (rideDate.toDateString() === today.toDateString()) {
+                dateText = 'Today';
+            } else if (rideDate.toDateString() === tomorrow.toDateString()) {
+                dateText = 'Tomorrow';
+            } else {
+                dateText = rideDate.toLocaleDateString('en-US', { 
+                    month: 'short', 
+                    day: 'numeric' 
+                });
+            }
+
+            // Format time from the date string
+            const timeText = rideDate.toLocaleTimeString('en-US', {
+                hour: 'numeric',
+                minute: '2-digit',
+                hour12: true
+            });
+
+            card.innerHTML = `
+                <div class="flex justify-between items-start mb-4">
+                    <div class="flex-1">
+                        <div class="flex items-center space-x-3 mb-2">
+                            <img src="${ride.driverProfilePicture || 'https://ui-avatars.com/api/?name=User&background=10B981&color=fff'}" 
+                                 alt="Driver" class="w-10 h-10 rounded-full object-cover">
+                            <div>
+                                <h3 class="font-semibold text-gray-900">${ride.driverName || 'User'}</h3>
+                            </div>
+                        </div>
+                        <div class="space-y-2">
+                            <p class="text-gray-600">
+                                <i class="fas fa-map-marker-alt text-green-600 mr-2"></i>
+                                From: ${ride.startingPoint}
+                            </p>
+                            <p class="text-gray-600">
+                                <i class="fas fa-map-marker text-green-600 mr-2"></i>
+                                To: ${ride.destination}
+                            </p>
+                        </div>
+                    </div>
+                    <p class="text-lg font-bold text-green-600">₹${ride.price}</p>
+                </div>
+                <div class="flex items-center justify-between mb-4">
+                    <div class="flex items-center text-sm text-gray-500">
+                        <i class="fas fa-calendar mr-2"></i>
+                        ${dateText}
+                    </div>
+                    <div class="flex items-center text-sm text-gray-500">
+                        <i class="fas fa-clock mr-2"></i>
+                        ${timeText}
+                    </div>
+                    <div class="flex items-center text-sm text-gray-500">
+                        <i class="fas fa-user mr-2"></i>
+                        ${ride.availableSeats} seats left
+                    </div>
+                </div>
+                <button class="view-details-btn w-full bg-green-600 text-white py-2 rounded-lg font-medium hover:bg-green-700 transition duration-200" data-ride-id="${ride.id}">
+                    View Details
+                </button>
+            `;
+
+            // Add click event listener to the view details button
+            const viewDetailsBtn = card.querySelector('.view-details-btn');
+            viewDetailsBtn.addEventListener('click', () => viewRideDetails(ride.id));
+            
+            return card;
+        }
+
+        // Helper function to format time ago
+        function formatTimeAgo(dateString) {
+            const date = new Date(dateString);
+            const now = new Date();
+            const diffMs = now - date;
+            const diffSec = Math.floor(diffMs / 1000);
+            const diffMin = Math.floor(diffSec / 60);
+            const diffHour = Math.floor(diffMin / 60);
+            const diffDay = Math.floor(diffHour / 24);
+            
+            if (diffSec < 60) {
+                return 'Just now';
+            } else if (diffMin < 60) {
+                return `${diffMin}m ago`;
+            } else if (diffHour < 24) {
+                return `${diffHour}h ago`;
+            } else if (diffDay < 7) {
+                return `${diffDay}d ago`;
+            } else {
+                return date.toLocaleDateString('en-US', { 
+                    month: 'short', 
+                    day: 'numeric' 
+                });
+            }
+        }
+        
+        // Request to join a ride
+        async function requestRide(rideId, button) {
+            try {
+                console.log('Requesting to join ride:', rideId);
+                
+                // Validate ride ID
+                if (!rideId) {
+                    throw new Error('Invalid ride ID');
+                }
+                
+                // Check if user is logged in
+                if (!currentUser || !currentUser.uid) {
+                    alert('Please log in to request a ride');
+                    window.location.href = 'login.html';
+                    return;
+                }
+                
+                // Check if user profile is complete
+                if (!userProfile || !userProfile.fullName) {
+                    alert('Please complete your profile before requesting a ride');
+                    window.location.href = 'Untitled-4.html';
+                    return;
+                }
+                
+                // Disable button and show loading
+                button.disabled = true;
+                button.innerHTML = '<div class="loading-spinner"></div> Processing...';
+                
+                // Get ride details
+                console.log('Fetching ride details...');
+                const ride = await getRide(rideId);
+                
+                if (!ride) {
+                    throw new Error('Ride not found');
+                }
+                
+                // Check if user has already requested this ride
+                const existingBookings = await getUserBookings(currentUser.uid);
+                const hasExistingBooking = existingBookings.some(booking => 
+                    booking.rideId === rideId && ['pending', 'approved'].includes(booking.status)
+                );
+                
+                if (hasExistingBooking) {
+                    throw new Error('You have already requested or booked this ride');
+                }
+                
+                // Create booking data
+                const bookingData = {
+                    rideId: rideId,
+                    passengerId: currentUser.uid,
+                    passengerName: userProfile.fullName,
+                    passengerPhone: userProfile.phone || '',
+                    driverId: ride.driverId,
+                    driverName: ride.driverName,
+                    startingPoint: ride.startingPoint,
+                    destination: ride.destination,
+                    date: ride.date,
+                    price: ride.price,
+                    status: 'pending',
+                    createdAt: new Date().toISOString()
+                };
+                
+                // Create the booking
+                await createBooking(bookingData);
+                
+                // Update button state
+                button.innerHTML = 'Request Sent';
+                button.classList.remove('bg-green-600', 'hover:bg-green-700');
+                button.classList.add('bg-gray-400', 'cursor-not-allowed');
+                
+                // Close the modal
+                rideDetailsModal.classList.add('hidden');
+                
+                // Show success message
+                alert('Your ride request has been sent to the driver. You will be notified when they respond.');
+                
+            } catch (error) {
+                console.error('Error requesting ride:', error);
+                
+                // Reset button
+                button.disabled = false;
+                button.innerHTML = 'Request Ride';
+                
+                // Show error message
+                let errorMessage = 'Failed to request ride. ';
+                
+                if (error.message) {
+                    if (error.message.includes('already requested')) {
+                        errorMessage = error.message;
+                    } else if (error.message.includes('permission')) {
+                        errorMessage += 'You do not have permission to book this ride.';
+                    } else if (error.message.includes('not found')) {
+                        errorMessage += 'The ride is no longer available.';
+                    } else {
+                        errorMessage += 'Please try again.';
+                    }
+                }
+                
+                alert(errorMessage);
+            }
+        }
+        
+        // Function to view ride details
+        async function viewRideDetails(rideId) {
+            try {
+                currentRideId = rideId;
+                const ride = await getRide(rideId);
+                if (!ride) {
+                    throw new Error('Ride not found');
+                }
+
+                // Get driver profile
+                const driver = await getUserProfile(ride.driverId);
+
+                // Update modal content
+                document.getElementById('modalDriverImage').src = driver?.profilePicture || `https://ui-avatars.com/api/?name=${encodeURIComponent(driver?.fullName || 'User')}&background=10B981&color=fff`;
+                document.getElementById('modalDriverName').textContent = driver?.fullName || 'User';
+                document.getElementById('modalRoute').textContent = `${ride.startingPoint} → ${ride.destination}`;
+                
+                // Format date and time
+                const rideDate = new Date(ride.date);
+                document.getElementById('modalDate').textContent = rideDate.toLocaleDateString('en-US', {
+                    weekday: 'long',
+                    year: 'numeric',
+                    month: 'long',
+                    day: 'numeric'
+                });
+                
+                // Format time from the date string
+                const timeText = rideDate.toLocaleTimeString('en-US', {
+                    hour: 'numeric',
+                    minute: '2-digit',
+                    hour12: true
+                });
+                document.getElementById('modalTime').textContent = timeText;
+                
+                document.getElementById('modalSeats').textContent = `${ride.availableSeats} available`;
+                document.getElementById('modalPrice').textContent = `₹${ride.price}`;
+
+                // Check if user has already requested this ride
+                const existingBookings = await getUserBookings(currentUser.uid);
+                const existingBooking = existingBookings.find(booking => booking.rideId === rideId);
+                
+                const requestRideBtn = document.getElementById('requestRideBtn');
+                
+                if (existingBooking) {
+                    if (existingBooking.status === 'pending') {
+                        requestRideBtn.innerHTML = 'Request Sent';
+                        requestRideBtn.disabled = true;
+                        requestRideBtn.classList.remove('bg-green-600', 'hover:bg-green-700');
+                        requestRideBtn.classList.add('bg-gray-400', 'cursor-not-allowed');
+                    } else if (existingBooking.status === 'approved') {
+                        requestRideBtn.innerHTML = 'Ride Confirmed';
+                        requestRideBtn.disabled = true;
+                        requestRideBtn.classList.remove('bg-green-600', 'hover:bg-green-700');
+                        requestRideBtn.classList.add('bg-green-700', 'cursor-not-allowed');
+                    }
+                } else {
+                    requestRideBtn.innerHTML = 'Request Ride';
+                    requestRideBtn.disabled = false;
+                    requestRideBtn.classList.remove('bg-gray-400', 'cursor-not-allowed');
+                    requestRideBtn.classList.add('bg-green-600', 'hover:bg-green-700');
+                }
+
+                // Show modal
+                rideDetailsModal.classList.remove('hidden');
+            } catch (error) {
+                console.error('Error loading ride details:', error);
+                alert('Error loading ride details. Please try again.');
+            }
+        }
+
+        // Close modal when clicking the close button
+        closeModalBtn.addEventListener('click', () => {
+                    rideDetailsModal.classList.add('hidden');
+            currentRideId = null;
+        });
+
+        // Close modal when clicking outside
+        rideDetailsModal.addEventListener('click', (e) => {
+            if (e.target === rideDetailsModal) {
+                rideDetailsModal.classList.add('hidden');
+                currentRideId = null;
+            }
+        });
+
+        // Handle ride request
+        requestRideBtn.addEventListener('click', async () => {
+            try {
+                if (!currentRideId) return;
+                
+                // Check if user is logged in
+                if (!currentUser || !currentUser.uid) {
+                    alert('Please log in to request a ride');
+                    window.location.href = 'login.html';
+                    return;
+                }
+                
+                // Check if user profile is complete
+                if (!userProfile || !userProfile.fullName) {
+                    alert('Please complete your profile before requesting a ride');
+                    window.location.href = 'Untitled-4.html';
+                    return;
+                }
+
+                // Store ride ID in session storage
+                sessionStorage.setItem('selectedRideId', currentRideId);
+                
+                // Navigate to ride details page
+                window.location.href = 'ride-details.html';
+            } catch (error) {
+                console.error('Error handling ride request:', error);
+                alert('An error occurred. Please try again.');
+            }
+        });
+        
+        // Search form submission
+        searchForm.addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            // Show loading spinner
+            searchButton.disabled = true;
+            searchSpinner.classList.remove('hidden');
+            
+            // Get search parameters
+            const searchStartingPoint = startingPoint.value.trim();
+            const searchDestination = destination.value.trim();
+            const searchDate = rideDate.value;
+            
+            console.log('Searching for rides:', { 
+                from: searchStartingPoint,
+                destination: searchDestination, 
+                date: searchDate 
+            });
+            
+            // Reset filters
+            filterAll.classList.add('bg-green-600', 'text-white');
+            filterAll.classList.remove('bg-gray-200', 'text-gray-700');
+            filterToday.classList.add('bg-gray-200', 'text-gray-700');
+            filterToday.classList.remove('bg-green-600', 'text-white');
+            filterTomorrow.classList.add('bg-gray-200', 'text-gray-700');
+            filterTomorrow.classList.remove('bg-green-600', 'text-white');
+            
+            try {
+                // Load rides with search parameters
+                await loadRides(searchDestination, searchDate, searchStartingPoint);
+                
+                // Log search results
+                console.log(`Search complete. Found ${allRides.length} matching rides.`);
+                
+                // If no rides found, show a message
+                if (allRides.length === 0) {
+                    // This will be handled by displayRides function
+                    console.log('No rides found matching the search criteria');
+                }
+            } catch (error) {
+                console.error('Error during search:', error);
+                alert('There was an error searching for rides. Please try again.');
+            } finally {
+                // Hide loading spinner
+                searchButton.disabled = false;
+                searchSpinner.classList.add('hidden');
+            }
+        });
+        
+        // Filter buttons
+        filterAll.addEventListener('click', function() {
+            console.log('Showing all rides');
+            
+            this.classList.add('bg-green-600', 'text-white');
+            this.classList.remove('bg-gray-200', 'text-gray-700');
+            filterToday.classList.add('bg-gray-200', 'text-gray-700');
+            filterToday.classList.remove('bg-green-600', 'text-white');
+            filterTomorrow.classList.add('bg-gray-200', 'text-gray-700');
+            filterTomorrow.classList.remove('bg-green-600', 'text-white');
+            
+            // Show all rides
+            if (allRides && allRides.length > 0) {
+                console.log(`Displaying all ${allRides.length} rides`);
+                displayRides(allRides);
+            } else {
+                console.log('No rides available to display');
+                // Try to reload rides if none are available
+                loadRides();
+            }
+        });
+        
+        filterToday.addEventListener('click', function() {
+            console.log('Filtering rides for today');
+            
+            this.classList.add('bg-green-600', 'text-white');
+            this.classList.remove('bg-gray-200', 'text-gray-700');
+            filterAll.classList.add('bg-gray-200', 'text-gray-700');
+            filterAll.classList.remove('bg-green-600', 'text-white');
+            filterTomorrow.classList.add('bg-gray-200', 'text-gray-700');
+            filterTomorrow.classList.remove('bg-green-600', 'text-white');
+            
+            // Filter rides for today
+            const today = new Date();
+            today.setHours(0, 0, 0, 0);
+            
+            if (!allRides || allRides.length === 0) {
+                console.log('No rides available to filter');
+                // Try to reload rides if none are available
+                loadRides().then(() => {
+                    filterTodayRides(today);
+                });
+            } else {
+                filterTodayRides(today);
+            }
+        });
+        
+        function filterTodayRides(today) {
+            const todayRides = allRides.filter(ride => {
+                if (!ride || !ride.date) return false;
+                const rideDate = new Date(ride.date);
+                rideDate.setHours(0, 0, 0, 0);
+                return rideDate.getTime() === today.getTime();
+            });
+            
+            console.log(`Found ${todayRides.length} rides for today`);
+            displayRides(todayRides);
+        }
+        
+        filterTomorrow.addEventListener('click', function() {
+            console.log('Filtering rides for tomorrow');
+            
+            this.classList.add('bg-green-600', 'text-white');
+            this.classList.remove('bg-gray-200', 'text-gray-700');
+            filterAll.classList.add('bg-gray-200', 'text-gray-700');
+            filterAll.classList.remove('bg-green-600', 'text-white');
+            filterToday.classList.add('bg-gray-200', 'text-gray-700');
+            filterToday.classList.remove('bg-green-600', 'text-white');
+            
+            // Filter rides for tomorrow
+            const tomorrow = new Date();
+            tomorrow.setDate(tomorrow.getDate() + 1);
+            tomorrow.setHours(0, 0, 0, 0);
+            
+            if (!allRides || allRides.length === 0) {
+                console.log('No rides available to filter');
+                // Try to reload rides if none are available
+                loadRides().then(() => {
+                    filterTomorrowRides(tomorrow);
+                });
+            } else {
+                filterTomorrowRides(tomorrow);
+            }
+        });
+        
+        function filterTomorrowRides(tomorrow) {
+            const tomorrowRides = allRides.filter(ride => {
+                if (!ride || !ride.date) return false;
+                const rideDate = new Date(ride.date);
+                rideDate.setHours(0, 0, 0, 0);
+                return rideDate.getTime() === tomorrow.getTime();
+            });
+            
+            console.log(`Found ${tomorrowRides.length} rides for tomorrow`);
+            displayRides(tomorrowRides);
+        }
+    </script>
+</body>
+
+</html>

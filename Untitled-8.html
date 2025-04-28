@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fuel Saved - Raahi</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            padding-bottom: 4rem;
+        }
+        
+        .bottom-nav-item.active {
+            color: #000;
+        }
+        
+        .stat-card {
+            background: linear-gradient(135deg, #4ade80 0%, #22c55e 100%);
+        }
+    </style>
+</head>
+
+<body class="bg-gray-100 min-h-screen">
+    <!-- Header -->
+    <header class="bg-white shadow-sm">
+        <div class="container mx-auto px-4 py-4">
+            <h1 class="text-2xl font-bold text-gray-900">Fuel Saved</h1>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <div class="container mx-auto px-4 py-6">
+        <!-- Impact Stats -->
+        <div class="grid grid-cols-2 gap-4 mb-6">
+            <div class="stat-card rounded-xl p-6 text-white">
+                <i class="fas fa-gas-pump text-4xl mb-3 opacity-90"></i>
+                <h3 class="text-2xl font-bold mb-1">50L</h3>
+                <p class="text-sm opacity-90">Fuel Saved</p>
+            </div>
+            <div class="stat-card rounded-xl p-6 text-white">
+                <i class="fas fa-leaf text-4xl mb-3 opacity-90"></i>
+                <h3 class="text-2xl font-bold mb-1">120kg</h3>
+                <p class="text-sm opacity-90">CO₂ Reduced</p>
+            </div>
+        </div>
+
+        <!-- Contribution Message -->
+        <div class="bg-white rounded-xl shadow-sm p-6 mb-6">
+            <div class="flex items-start space-x-4">
+                <div class="bg-green-100 rounded-full p-3">
+                    <i class="fas fa-tree text-green-600 text-xl"></i>
+                </div>
+                <div>
+                    <h2 class="text-lg font-semibold mb-2">Your Green Impact</h2>
+                    <p class="text-gray-600">Your ride sharing has helped save the equivalent of planting 5 trees! Keep going to make our planet greener.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Fee Explanation -->
+        <div class="bg-white rounded-xl shadow-sm p-6 mb-6">
+            <h2 class="text-lg font-semibold mb-4">Platform Fee Explained</h2>
+            <div class="space-y-4">
+                <div class="flex items-start space-x-3">
+                    <i class="fas fa-info-circle text-blue-500 mt-1"></i>
+                    <p class="text-gray-600">A nominal fee of ₹5 per seat helps us maintain and improve the platform while promoting sustainable travel.</p>
+                </div>
+                <div class="bg-gray-50 rounded-lg p-4">
+                    <h3 class="font-medium mb-2">How your ₹5 helps:</h3>
+                    <ul class="space-y-2 text-sm text-gray-600">
+                        <li class="flex items-center">
+                            <i class="fas fa-check text-green-500 w-5"></i> Platform maintenance and improvements
+                        </li>
+                        <li class="flex items-center">
+                            <i class="fas fa-check text-green-500 w-5"></i> 24/7 customer support
+                        </li>
+                        <li class="flex items-center">
+                            <i class="fas fa-check text-green-500 w-5"></i> Safety features and verification
+                        </li>
+                        <li class="flex items-center">
+                            <i class="fas fa-check text-green-500 w-5"></i> Environmental impact tracking
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- Monthly Stats -->
+        <div class="bg-white rounded-xl shadow-sm p-6">
+            <h2 class="text-lg font-semibold mb-4">Monthly Impact</h2>
+            <div class="space-y-4">
+                <div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                    <div>
+                        <p class="font-medium">March 2024</p>
+                        <p class="text-sm text-gray-600">15L fuel • 36kg CO₂</p>
+                    </div>
+                    <i class="fas fa-chevron-right text-gray-400"></i>
+                </div>
+                <div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                    <div>
+                        <p class="font-medium">February 2024</p>
+                        <p class="text-sm text-gray-600">20L fuel • 48kg CO₂</p>
+                    </div>
+                    <i class="fas fa-chevron-right text-gray-400"></i>
+                </div>
+                <div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                    <div>
+                        <p class="font-medium">January 2024</p>
+                        <p class="text-sm text-gray-600">15L fuel • 36kg CO₂</p>
+                    </div>
+                    <i class="fas fa-chevron-right text-gray-400"></i>
+                </div>
+            </div>
+        </div>
+
+        <!-- Motivational Message -->
+        <div class="mt-6 text-center">
+            <p class="text-gray-600 italic">"Every shared ride is a step towards a cleaner, greener future."</p>
+        </div>
+    </div>
+
+    <!-- Bottom Navigation -->
+    <nav class="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200">
+        <div class="flex justify-around items-center h-16">
+            <a href="Untitled-5.html" class="bottom-nav-item flex flex-col items-center text-sm text-gray-600">
+                <i class="fas fa-home text-xl mb-1"></i>
+                <span>Home</span>
+            </a>
+            <a href="Untitled-1.html" class="bottom-nav-item flex flex-col items-center text-sm text-gray-600">
+                <i class="fas fa-search text-xl mb-1"></i>
+                <span>Find</span>
+            </a>
+            <a href="Untitled-2.html" class="bottom-nav-item flex flex-col items-center text-sm text-gray-600">
+                <i class="fas fa-car text-xl mb-1"></i>
+                <span>Offer</span>
+            </a>
+            <a href="Untitled-9.html" class="bottom-nav-item flex flex-col items-center text-sm text-gray-600">
+                
+                <span>My Rides</span>
+            </a>
+            <a href="Untitled-4.html" class="bottom-nav-item flex flex-col items-center text-sm text-gray-600">
+                
+                <span>Profile</span>
+            </a>
+        </div>
+    </nav>
+</body>
+
+</html>

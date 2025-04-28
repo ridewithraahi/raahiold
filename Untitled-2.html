@@ -1,0 +1,464 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Offer a Ride - Raahi</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            padding-bottom: 4rem;
+        }
+        
+        .bottom-nav-item.active {
+            color: #000;
+        }
+        
+        .error-message {
+            color: #dc2626;
+            font-size: 0.875rem;
+            margin-top: 0.5rem;
+            display: none;
+        }
+        
+        .loading-spinner {
+            display: none;
+            border: 3px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            border-top: 3px solid #fff;
+            width: 20px;
+            height: 20px;
+            animation: spin 1s linear infinite;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+
+<body class="bg-gray-50 min-h-screen">
+    <!-- Header -->
+    <header class="bg-white shadow-sm">
+        <div class="container mx-auto px-4 py-4">
+            <h1 class="text-2xl font-bold text-gray-900">Offer a Ride</h1>
+            <p class="text-gray-600">Share your journey with fellow students</p>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <div class="container mx-auto px-4 py-6">
+        <form id="offerRideForm" class="space-y-6">
+            <!-- Route Section -->
+            <div class="bg-white rounded-xl shadow-sm p-6">
+                <h2 class="text-lg font-semibold mb-4">Route Details</h2>
+
+                <div class="space-y-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Starting Point</label>
+                        <div class="relative">
+                            <i class="fas fa-circle text-green-500 absolute left-3 top-3 text-xs"></i>
+                            <input type="text" id="startingPoint" placeholder="Where are you starting from?" required class="pl-10 block w-full rounded-lg border-gray-300 border p-2.5 focus:ring-2 focus:ring-green-500 focus:border-green-500">
+                        </div>
+                        <p id="startingPointError" class="error-message">Please enter a starting point</p>
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Destination</label>
+                        <div class="relative">
+                            <i class="fas fa-map-marker-alt text-red-500 absolute left-3 top-3"></i>
+                            <input type="text" id="destination" placeholder="Where are you going?" required class="pl-10 block w-full rounded-lg border-gray-300 border p-2.5 focus:ring-2 focus:ring-green-500 focus:border-green-500">
+                        </div>
+                        <p id="destinationError" class="error-message">Please enter a destination</p>
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Date</label>
+                            <div class="relative">
+                                <i class="fas fa-calendar absolute left-3 top-3 text-gray-400"></i>
+                                <input type="date" id="rideDate" required class="pl-10 block w-full rounded-lg border-gray-300 border p-2.5 focus:ring-2 focus:ring-green-500 focus:border-green-500">
+                            </div>
+                            <p id="dateError" class="error-message">Please select a valid date</p>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Time</label>
+                            <div class="relative">
+                                <i class="fas fa-clock absolute left-3 top-3 text-gray-400"></i>
+                                <input type="time" id="rideTime" required class="pl-10 block w-full rounded-lg border-gray-300 border p-2.5 focus:ring-2 focus:ring-green-500 focus:border-green-500">
+                            </div>
+                            <p id="timeError" class="error-message">Please select a valid time</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Vehicle Section -->
+            <div class="bg-white rounded-xl shadow-sm p-6">
+                <h2 class="text-lg font-semibold mb-4">Vehicle Details</h2>
+
+                <div class="space-y-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Select Vehicle</label>
+                        <select id="vehicleSelect" required class="block w-full rounded-lg border-gray-300 border p-2.5 focus:ring-2 focus:ring-green-500 focus:border-green-500">
+                            <option value="">Select a vehicle</option>
+                            <option value="honda-city">Honda City - White (KA01AB1234)</option>
+                            <option value="add-new">+ Add New Vehicle</option>
+                        </select>
+                        <p id="vehicleError" class="error-message">Please select a vehicle</p>
+                    </div>
+
+                    <div id="addVehicleForm" class="space-y-4 hidden">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Vehicle Make & Model</label>
+                            <input type="text" id="vehicleModel" placeholder="e.g., Honda City" class="block w-full rounded-lg border-gray-300 border p-2.5 focus:ring-2 focus:ring-green-500 focus:border-green-500">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Vehicle Color</label>
+                            <input type="text" id="vehicleColor" placeholder="e.g., White" class="block w-full rounded-lg border-gray-300 border p-2.5 focus:ring-2 focus:ring-green-500 focus:border-green-500">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">License Plate Number</label>
+                            <input type="text" id="licensePlate" placeholder="e.g., KA01AB1234" class="block w-full rounded-lg border-gray-300 border p-2.5 focus:ring-2 focus:ring-green-500 focus:border-green-500">
+                        </div>
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Available Seats</label>
+                        <select id="availableSeats" required class="block w-full rounded-lg border-gray-300 border p-2.5 focus:ring-2 focus:ring-green-500 focus:border-green-500">
+                            <option value="">Select available seats</option>
+                            <option value="1">1 seat</option>
+                            <option value="2">2 seats</option>
+                            <option value="3">3 seats</option>
+                            <option value="4">4 seats</option>
+                        </select>
+                        <p id="seatsError" class="error-message">Please select available seats</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Price Section -->
+            <div class="bg-white rounded-xl shadow-sm p-6">
+                <h2 class="text-lg font-semibold mb-4">Price Details</h2>
+
+                <div class="space-y-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Price per Seat</label>
+                        <div class="relative">
+                            <span class="absolute left-3 top-3 text-gray-500">₹</span>
+                            <input type="number" id="pricePerSeat" min="0" step="10" required placeholder="0" class="pl-8 block w-full rounded-lg border-gray-300 border p-2.5 focus:ring-2 focus:ring-green-500 focus:border-green-500">
+                        </div>
+                        <p id="priceError" class="error-message">Please enter a valid price</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Additional Details -->
+            <div class="bg-white rounded-xl shadow-sm p-6">
+                <h2 class="text-lg font-semibold mb-4">Additional Details</h2>
+
+                <div class="space-y-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Notes for Co-passengers (Optional)</label>
+                        <textarea id="rideNotes" class="block w-full rounded-lg border-gray-300 border p-2.5 focus:ring-2 focus:ring-green-500 focus:border-green-500" rows="3" placeholder="Any specific instructions or information..."></textarea>
+                    </div>
+
+                    <div class="flex items-center">
+                        <input type="checkbox" id="womenOnly" class="h-4 w-4 text-green-600 focus:ring-green-500 border-gray-300 rounded">
+                        <label for="womenOnly" class="ml-2 block text-sm text-gray-700">Women passengers only</label>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Submit Button -->
+            <button type="submit" id="submitButton" class="w-full bg-green-600 text-white py-3 rounded-lg font-semibold hover:bg-green-700 transition duration-200 flex items-center justify-center">
+                <i class="fas fa-check-circle mr-2"></i>
+                <span>Post Ride</span>
+                <div id="submitSpinner" class="loading-spinner ml-2"></div>
+            </button>
+            <p id="formError" class="error-message text-center"></p>
+        </form>
+    </div>
+
+    <!-- Bottom Navigation -->
+    <nav class="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200">
+        <div class="flex justify-around items-center h-16">
+            <a href="Untitled-5.html" class="bottom-nav-item flex flex-col items-center text-sm text-gray-600">
+                <i class="fas fa-home text-xl mb-1"></i>
+                <span>Home</span>
+            </a>
+            <a href="Untitled-1.html" class="bottom-nav-item flex flex-col items-center text-sm text-gray-600">
+                <i class="fas fa-search text-xl mb-1"></i>
+                <span>Find</span>
+            </a>
+            <a href="Untitled-2.html" class="bottom-nav-item active flex flex-col items-center text-sm">
+                <i class="fas fa-car text-xl mb-1"></i>
+                <span>Offer</span>
+            </a>
+            <a href="Untitled-9.html" class="bottom-nav-item flex flex-col items-center text-sm text-gray-600">
+                
+                <span>My Rides</span>
+            </a>
+            <a href="Untitled-4.html" class="bottom-nav-item flex flex-col items-center text-sm text-gray-600">
+                <i class="fas fa-user text-xl mb-1"></i>
+                <span>Profile</span>
+            </a>
+        </div>
+    </nav>
+
+    <!-- Firebase SDK -->
+    <script type="module">
+        // Import Firebase functions
+        import { 
+            getCurrentUser, 
+            getUserProfile, 
+            createRide 
+        } from './firebase.js';
+
+        // DOM Elements
+        const offerRideForm = document.getElementById('offerRideForm');
+        const destination = document.getElementById('destination');
+        const rideDate = document.getElementById('rideDate');
+        const rideTime = document.getElementById('rideTime');
+        const vehicleSelect = document.getElementById('vehicleSelect');
+        const addVehicleForm = document.getElementById('addVehicleForm');
+        const vehicleModel = document.getElementById('vehicleModel');
+        const vehicleColor = document.getElementById('vehicleColor');
+        const licensePlate = document.getElementById('licensePlate');
+        const availableSeats = document.getElementById('availableSeats');
+        const pricePerSeat = document.getElementById('pricePerSeat');
+        const rideNotes = document.getElementById('rideNotes');
+        const womenOnly = document.getElementById('womenOnly');
+        const submitButton = document.getElementById('submitButton');
+        const submitSpinner = document.getElementById('submitSpinner');
+        const formError = document.getElementById('formError');
+        
+        // Error elements
+        const destinationError = document.getElementById('destinationError');
+        const dateError = document.getElementById('dateError');
+        const timeError = document.getElementById('timeError');
+        const vehicleError = document.getElementById('vehicleError');
+        const seatsError = document.getElementById('seatsError');
+        const priceError = document.getElementById('priceError');
+        
+        // Set minimum date to today
+        const today = new Date();
+        const yyyy = today.getFullYear();
+        const mm = String(today.getMonth() + 1).padStart(2, '0');
+        const dd = String(today.getDate()).padStart(2, '0');
+        rideDate.min = `${yyyy}-${mm}-${dd}`;
+        
+        // Check if user is logged in
+        let currentUser = null;
+        let userProfile = null;
+        
+        window.addEventListener('DOMContentLoaded', async function() {
+            try {
+                currentUser = await getCurrentUser();
+                if (!currentUser) {
+                    // User is not logged in, redirect to login page
+                    window.location.href = 'login.html';
+                    return;
+                }
+                
+                // Get user profile
+                userProfile = await getUserProfile(currentUser.uid);
+                if (!userProfile || !(userProfile.profileComplete || userProfile.isProfileComplete)) {
+                    // Profile not complete, redirect to profile completion page
+                    window.location.href = 'Untitled-6.html';
+                    return;
+                }
+            } catch (error) {
+                console.error('Auth state check error:', error);
+                window.location.href = 'login.html';
+            }
+        });
+        
+        // Handle vehicle selection
+        vehicleSelect.addEventListener('change', function() {
+            if (this.value === 'add-new') {
+                addVehicleForm.classList.remove('hidden');
+                // Clear any previous vehicle error
+                vehicleError.style.display = 'none';
+            } else {
+                addVehicleForm.classList.add('hidden');
+                
+                if (this.value === '') {
+                    vehicleError.style.display = 'block';
+                } else {
+                    vehicleError.style.display = 'none';
+                }
+            }
+        });
+        
+        // Form validation
+        destination.addEventListener('input', function() {
+            if (this.value.trim() === '') {
+                destinationError.style.display = 'block';
+            } else {
+                destinationError.style.display = 'none';
+            }
+        });
+        
+        rideDate.addEventListener('change', function() {
+            const selectedDate = new Date(this.value);
+            const today = new Date();
+            today.setHours(0, 0, 0, 0);
+            
+            if (selectedDate < today) {
+                dateError.style.display = 'block';
+            } else {
+                dateError.style.display = 'none';
+            }
+        });
+        
+        rideTime.addEventListener('change', function() {
+            if (this.value === '') {
+                timeError.style.display = 'block';
+            } else {
+                timeError.style.display = 'none';
+            }
+        });
+        
+        availableSeats.addEventListener('change', function() {
+            if (this.value === '') {
+                seatsError.style.display = 'block';
+            } else {
+                seatsError.style.display = 'none';
+            }
+        });
+        
+        pricePerSeat.addEventListener('input', function() {
+            if (this.value < 0 || this.value === '') {
+                priceError.style.display = 'block';
+            } else {
+                priceError.style.display = 'none';
+            }
+        });
+        
+        // Form submission
+        offerRideForm.addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            // Reset form error
+            formError.textContent = '';
+            formError.style.display = 'none';
+            
+            // Validate form
+            let hasError = false;
+            
+            if (startingPoint.value.trim() === '') {
+                startingPointError.style.display = 'block';
+                hasError = true;
+            }
+            
+            if (destination.value.trim() === '') {
+                destinationError.style.display = 'block';
+                hasError = true;
+            }
+            
+            const selectedDate = new Date(rideDate.value);
+            const today = new Date();
+            today.setHours(0, 0, 0, 0);
+            
+            if (selectedDate < today || rideDate.value === '') {
+                dateError.style.display = 'block';
+                hasError = true;
+            }
+            
+            if (rideTime.value === '') {
+                timeError.style.display = 'block';
+                hasError = true;
+            }
+            
+            // Check vehicle selection
+            let vehicleData = null;
+            if (vehicleSelect.value === '') {
+                vehicleError.style.display = 'block';
+                hasError = true;
+            } else if (vehicleSelect.value === 'add-new') {
+                // Validate new vehicle fields
+                if (vehicleModel.value.trim() === '' || vehicleColor.value.trim() === '' || licensePlate.value.trim() === '') {
+                    vehicleError.textContent = 'Please complete all vehicle details';
+                    vehicleError.style.display = 'block';
+                    hasError = true;
+                } else {
+                    vehicleData = {
+                        model: vehicleModel.value.trim(),
+                        color: vehicleColor.value.trim(),
+                        licensePlate: licensePlate.value.trim()
+                    };
+                }
+            } else {
+                // Use selected vehicle
+                vehicleData = {
+                    model: 'Honda City',
+                    color: 'White',
+                    licensePlate: 'KA01AB1234'
+                };
+            }
+            
+            if (availableSeats.value === '') {
+                seatsError.style.display = 'block';
+                hasError = true;
+            }
+            
+            if (pricePerSeat.value < 0 || pricePerSeat.value === '') {
+                priceError.style.display = 'block';
+                hasError = true;
+            }
+            
+            if (hasError) {
+                return;
+            }
+            
+            // Show loading spinner
+            submitButton.disabled = true;
+            submitSpinner.style.display = 'block';
+            
+            try {
+                // Combine date and time
+                const dateTimeString = `${rideDate.value}T${rideTime.value}:00`;
+                const rideDateTime = new Date(dateTimeString);
+                
+                // Create ride data
+                const rideData = {
+                    driverId: currentUser.uid,
+                    driverName: userProfile.fullName,
+                    startingPoint: startingPoint.value.trim(),
+                    destination: destination.value.trim(),
+                    date: rideDateTime.toISOString(),
+                    vehicle: vehicleData,
+                    availableSeats: parseInt(availableSeats.value),
+                    price: parseInt(pricePerSeat.value),
+                    notes: rideNotes.value.trim(),
+                    womenOnly: womenOnly.checked,
+                    status: 'active',
+                    passengers: []
+                };
+                
+                // Create ride in Firebase
+                await createRide(rideData);
+                
+                // Redirect to My Rides page
+                window.location.href = 'Untitled-9.html';
+            } catch (error) {
+                console.error('Error creating ride:', error);
+                
+                formError.textContent = 'An error occurred while creating your ride. Please try again.';
+                formError.style.display = 'block';
+                
+                // Hide loading spinner
+                submitButton.disabled = false;
+                submitSpinner.style.display = 'none';
+            }
+        });
+    </script>
+</body>
+
+</html>

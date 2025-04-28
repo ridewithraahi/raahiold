@@ -1,0 +1,422 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Complete Your Profile - Raahi</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        
+        .error-message {
+            color: #dc2626;
+            font-size: 0.875rem;
+            margin-top: 0.5rem;
+            display: none;
+        }
+        
+        .loading-spinner {
+            display: none;
+            border: 3px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            border-top: 3px solid #fff;
+            width: 20px;
+            height: 20px;
+            animation: spin 1s linear infinite;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+
+<body class="bg-gray-50 min-h-screen">
+    <!-- Firebase Rules Warning (hidden by default) -->
+    <div id="firebaseRulesWarning" class="bg-yellow-50 border-l-4 border-yellow-400 p-4 mb-4 mx-4 rounded shadow-sm hidden">
+        <div class="flex">
+            <div class="flex-shrink-0">
+                <i class="fas fa-exclamation-triangle text-yellow-400"></i>
+            </div>
+            <div class="ml-3">
+                <p class="text-sm text-yellow-700">
+                    <strong>Firebase Rules Warning:</strong> The app may have issues with saving data due to Firebase security rules.
+                    <a href="#" id="rulesInfoLink" class="font-medium underline text-yellow-700 hover:text-yellow-600">
+                        Learn more
+                    </a>
+                </p>
+            </div>
+            <button id="closeWarningBtn" class="ml-auto pl-3 text-yellow-500 hover:text-yellow-600">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+    </div>
+
+    <div class="container mx-auto px-4 py-8">
+        <div class="max-w-2xl mx-auto bg-white rounded-xl shadow-lg overflow-hidden">
+            <div class="p-8">
+                <div class="text-center mb-8">
+                    <h1 class="text-3xl font-bold text-gray-900 mb-2">Complete Your Profile</h1>
+                    <p class="text-gray-600">Help us create a trusted carpooling community</p>
+                </div>
+
+                <form id="profileForm" class="space-y-6">
+                    <!-- Profile Picture -->
+                    <div class="text-center">
+                        <div class="relative inline-block">
+                            <img id="profilePreview" src="https://via.placeholder.com/150" alt="Profile Picture" class="w-32 h-32 rounded-full object-cover border-4 border-green-500 mb-2">
+                            <label for="profilePic" class="absolute bottom-0 right-0 bg-green-600 text-white rounded-full p-2 cursor-pointer hover:bg-green-700">
+                                <i class="fas fa-camera"></i>
+                            </label>
+                            <input type="file" id="profilePic" class="hidden" accept="image/*">
+                        </div>
+                    </div>
+
+                    <!-- Basic Information -->
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Full Name</label>
+                            <input type="text" id="fullName" required class="block w-full rounded-lg border-gray-300 border p-2.5 focus:ring-2 focus:ring-green-500 focus:border-green-500" placeholder="Enter your full name">
+                            <p id="nameError" class="error-message">Please enter your full name</p>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Phone Number</label>
+                            <div class="flex">
+                                <span class="inline-flex items-center px-3 rounded-l-lg border border-r-0 border-gray-300 bg-gray-50 text-gray-500 text-sm">
+                                    +91
+                                </span>
+                                <input type="tel" id="phoneNumber" required pattern="[0-9]{10}" class="flex-1 block w-full rounded-r-lg border-gray-300 border p-2.5 focus:ring-2 focus:ring-green-500 focus:border-green-500" placeholder="Enter your phone number">
+                            </div>
+                            <p id="phoneError" class="error-message">Please enter a valid 10-digit phone number</p>
+                        </div>
+                    </div>
+
+                    <!-- Department and Year -->
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Department</label>
+                            <select id="department" required class="block w-full rounded-lg border-gray-300 border p-2.5 focus:ring-2 focus:ring-green-500 focus:border-green-500">
+                                <option value="">Select your department</option>
+                                <option value="cse">Computer Science</option>
+                                <option value="ece">Electronics & Communication</option>
+                                <option value="me">Mechanical Engineering</option>
+                                <option value="ce">Civil Engineering</option>
+                                <option value="bt">Biotechnology</option>
+                                <option value="bba">Business Administration</option>
+                                <option value="law">School of Law</option>
+                                <option value="other">Other</option>
+                            </select>
+                            <p id="departmentError" class="error-message">Please select your department</p>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Year of Study</label>
+                            <select id="yearOfStudy" required class="block w-full rounded-lg border-gray-300 border p-2.5 focus:ring-2 focus:ring-green-500 focus:border-green-500">
+                                <option value="">Select your year</option>
+                                <option value="1">1st Year</option>
+                                <option value="2">2nd Year</option>
+                                <option value="3">3rd Year</option>
+                                <option value="4">4th Year</option>
+                                <option value="5">5th Year</option>
+                            </select>
+                            <p id="yearError" class="error-message">Please select your year of study</p>
+                        </div>
+                    </div>
+
+                    <!-- Gender (Optional) -->
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Gender (Optional)</label>
+                        <div class="flex space-x-4">
+                            <label class="flex items-center">
+                                <input type="radio" name="gender" value="male" class="h-4 w-4 text-green-600 focus:ring-green-500 border-gray-300">
+                                <span class="ml-2 text-gray-700">Male</span>
+                            </label>
+                            <label class="flex items-center">
+                                <input type="radio" name="gender" value="female" class="h-4 w-4 text-green-600 focus:ring-green-500 border-gray-300">
+                                <span class="ml-2 text-gray-700">Female</span>
+                            </label>
+                            <label class="flex items-center">
+                                <input type="radio" name="gender" value="other" class="h-4 w-4 text-green-600 focus:ring-green-500 border-gray-300">
+                                <span class="ml-2 text-gray-700">Prefer not to say</span>
+                            </label>
+                        </div>
+                    </div>
+
+                    <!-- Bio -->
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Bio (Optional)</label>
+                        <textarea id="bio" class="block w-full rounded-lg border-gray-300 border p-2.5 focus:ring-2 focus:ring-green-500 focus:border-green-500" rows="3" placeholder="Tell us a bit about yourself..."></textarea>
+                    </div>
+
+                    <!-- Submit Button -->
+                    <button type="submit" id="submitButton" class="w-full bg-green-600 text-white py-3 rounded-lg font-semibold hover:bg-green-700 transition duration-200 flex items-center justify-center">
+                        <i class="fas fa-check-circle mr-2"></i>
+                        <span>Complete Profile</span>
+                        <div id="submitSpinner" class="loading-spinner ml-2"></div>
+                    </button>
+                    <p id="formError" class="error-message text-center"></p>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Firebase SDK -->
+    <script type="module">
+        // Import Firebase functions
+        import { 
+            auth, 
+            database,
+            getCurrentUser, 
+            createUserProfile, 
+            uploadProfilePicture,
+            getUserProfile,
+            hasStoredUserProfile
+        } from './firebase.js';
+        import { ref, set } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+
+        // DOM Elements
+        const profileForm = document.getElementById('profileForm');
+        const fullName = document.getElementById('fullName');
+        const phoneNumber = document.getElementById('phoneNumber');
+        const department = document.getElementById('department');
+        const yearOfStudy = document.getElementById('yearOfStudy');
+        const bio = document.getElementById('bio');
+        const profilePic = document.getElementById('profilePic');
+        const profilePreview = document.getElementById('profilePreview');
+        const submitButton = document.getElementById('submitButton');
+        const submitSpinner = document.getElementById('submitSpinner');
+        const formError = document.getElementById('formError');
+        
+        // Error elements
+        const nameError = document.getElementById('nameError');
+        const phoneError = document.getElementById('phoneError');
+        const departmentError = document.getElementById('departmentError');
+        const yearError = document.getElementById('yearError');
+        
+        // Firebase rules warning elements
+        const firebaseRulesWarning = document.getElementById('firebaseRulesWarning');
+        const rulesInfoLink = document.getElementById('rulesInfoLink');
+        const closeWarningBtn = document.getElementById('closeWarningBtn');
+        
+        // Check if user is logged in and handle Firebase rules warning
+        window.addEventListener('DOMContentLoaded', async function() {
+            try {
+                const user = await getCurrentUser();
+                if (!user) {
+                    // User is not logged in, redirect to login page
+                    window.location.href = 'login.html';
+                    return;
+                }
+                
+                // Check if user profile data already exists
+                try {
+                    const profile = await getUserProfile(user.uid);
+                    if (profile) {
+                        // If profile is already complete, redirect to dashboard
+                        if (profile.profileComplete || profile.isProfileComplete) {
+                            console.log('Profile already complete, redirecting to dashboard');
+                            window.location.href = 'Untitled-5.html'; // Redirect to dashboard
+                            return;
+                        }
+                        
+                        // Otherwise, pre-fill the form with existing data
+                        if (profile.fullName) fullName.value = profile.fullName;
+                        if (profile.phoneNumber) phoneNumber.value = profile.phoneNumber;
+                        if (profile.department) department.value = profile.department;
+                        if (profile.yearOfStudy) yearOfStudy.value = profile.yearOfStudy;
+                        if (profile.bio) bio.value = profile.bio;
+                        
+                        // Set gender if available
+                        if (profile.gender) {
+                            const genderRadios = document.getElementsByName('gender');
+                            for (const radio of genderRadios) {
+                                if (radio.value === profile.gender) {
+                                    radio.checked = true;
+                                    break;
+                                }
+                            }
+                        }
+                        
+                        // Set profile picture if available
+                        if (profile.profilePicture) {
+                            profilePreview.src = profile.profilePicture;
+                        }
+                    }
+                } catch (profileError) {
+                    console.warn('Error loading profile data:', profileError);
+                }
+                
+                // Check if we should show the Firebase rules warning
+                // We'll do a test write to see if we have permission
+                try {
+                    // Try to write a test value to the database
+                    await set(ref(database, `_test/${user.uid}`), {
+                        timestamp: new Date().toISOString()
+                    });
+                } catch (error) {
+                    if (error.message && error.message.includes('PERMISSION_DENIED')) {
+                        // Show the warning
+                        firebaseRulesWarning.classList.remove('hidden');
+                    }
+                }
+            } catch (error) {
+                console.error('Auth state check error:', error);
+                window.location.href = 'login.html';
+            }
+        });
+        
+        // Rules info link
+        rulesInfoLink.addEventListener('click', function(e) {
+            e.preventDefault();
+            alert(`Firebase Rules Issue:
+
+Your Firebase database has security rules that are preventing write operations.
+
+To fix this, you need to update your Firebase Realtime Database rules in the Firebase console:
+
+1. Go to the Firebase Console
+2. Select your project
+3. Click on "Realtime Database" in the sidebar
+4. Click on the "Rules" tab
+5. Update the rules to allow authenticated users to read/write their own data
+
+See the firebase-rules-guide.txt file for detailed rules configuration.`);
+        });
+        
+        // Close warning button
+        closeWarningBtn.addEventListener('click', function() {
+            firebaseRulesWarning.classList.add('hidden');
+        });
+        
+        // Profile picture preview
+        profilePic.addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    profilePreview.src = e.target.result;
+                }
+                reader.readAsDataURL(file);
+            }
+        });
+        
+        // Form validation
+        fullName.addEventListener('input', function() {
+            if (this.value.trim().length < 3) {
+                nameError.style.display = 'block';
+            } else {
+                nameError.style.display = 'none';
+            }
+        });
+        
+        phoneNumber.addEventListener('input', function() {
+            const phoneRegex = /^[0-9]{10}$/;
+            if (!phoneRegex.test(this.value)) {
+                phoneError.style.display = 'block';
+            } else {
+                phoneError.style.display = 'none';
+            }
+        });
+        
+        department.addEventListener('change', function() {
+            if (this.value === '') {
+                departmentError.style.display = 'block';
+            } else {
+                departmentError.style.display = 'none';
+            }
+        });
+        
+        yearOfStudy.addEventListener('change', function() {
+            if (this.value === '') {
+                yearError.style.display = 'block';
+            } else {
+                yearError.style.display = 'none';
+            }
+        });
+        
+        // Profile form submission
+        profileForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            // Validate required fields
+            if (!fullName.value.trim()) {
+                nameError.style.display = 'block';
+                return;
+            }
+            
+            if (!phoneNumber.value.match(/^[0-9]{10}$/)) {
+                phoneError.style.display = 'block';
+                return;
+            }
+            
+            if (!department.value) {
+                departmentError.style.display = 'block';
+                return;
+            }
+            
+            if (!yearOfStudy.value) {
+                yearError.style.display = 'block';
+                return;
+            }
+
+            submitSpinner.style.display = 'inline-block';
+            submitButton.disabled = true;
+            formError.style.display = 'none';
+
+            try {
+                const user = await getCurrentUser();
+                if (!user) {
+                    throw new Error('No authenticated user found');
+                }
+
+                let profileData = {
+                    uid: user.uid,
+                    fullName: fullName.value.trim(),
+                    phoneNumber: '+91' + phoneNumber.value,
+                    department: department.value,
+                    yearOfStudy: yearOfStudy.value,
+                    gender: document.querySelector('input[name="gender"]:checked')?.value || 'prefer_not_to_say',
+                    bio: bio.value.trim() || '',
+                    profileComplete: true,
+                    createdAt: new Date().toISOString()
+                };
+
+                // Upload profile picture if selected
+                if (profilePic.files.length > 0) {
+                    const imageUrl = await uploadProfilePicture(user.uid, profilePic.files[0]);
+                    profileData.profilePicture = imageUrl;
+                }
+
+                // Save profile data
+                await createUserProfile(user.uid, profileData);
+
+                // Show success message
+                alert('Profile completed successfully! Please login again.');
+                
+                // Sign out the user
+                await auth.signOut();
+                
+                // Redirect to login page
+                window.location.href = 'login.html';
+                
+            } catch (error) {
+                console.error('Error saving profile:', error);
+                formError.textContent = 'Failed to save profile. Please try again.';
+                formError.style.display = 'block';
+                submitButton.disabled = false;
+            } finally {
+                submitSpinner.style.display = 'none';
+            }
+        });
+
+        // Test the getCurrentUser function
+        await import('./firebase.js').then(m => m.getCurrentUser()).then(console.log);
+    </script>
+</body>
+
+</html>

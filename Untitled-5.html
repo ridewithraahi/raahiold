@@ -1,0 +1,1068 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Home - Raahi</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#10b981',
+                        'primary-dark': '#059669',
+                        'primary-light': '#d1fae5',
+                        secondary: '#3b82f6',
+                        'secondary-light': '#dbeafe'
+                    }
+                }
+            }
+        }
+    </script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link rel="stylesheet" href="styles.css">
+    <style>
+        /* Additional page-specific styles */
+        .hero-pattern {
+            background-color: #10b981;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='100' height='100' viewBox='0 0 100 100'%3E%3Cg fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.1'%3E%3Cpath opacity='.5' d='M96 95h4v1h-4v4h-1v-4h-9v4h-1v-4h-9v4h-1v-4h-9v4h-1v-4h-9v4h-1v-4h-9v4h-1v-4h-9v4h-1v-4h-9v4h-1v-4H0v-1h15v-9H0v-1h15v-9H0v-1h15v-9H0v-1h15v-9H0v-1h15v-9H0v-1h15v-9H0v-1h15v-9H0v-1h15v-9H0v-1h15v-9H0v-1h15v-9H0v-1h15V0h1v15h9V0h1v15h9V0h1v15h9V0h1v15h9V0h1v15h9V0h1v15h9V0h1v15h4v1h-4v9h4v1h-4v9h4v1h-4v9h4v1h-4v9zm-1 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-9-10h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm9-10v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-9-10h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9z'/%3E%3Cpath d='M6 5V0H5v5H0v1h5v94h1V6h94V5H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+        }
+    </style>
+</head>
+
+<body class="bg-gray-50 min-h-screen">
+    <!-- Firebase Rules Warning (hidden by default) -->
+    <div id="firebaseRulesWarning" class="bg-yellow-50 border-l-4 border-yellow-400 p-4 mb-4 mx-4 rounded shadow-sm hidden">
+        <div class="flex">
+            <div class="flex-shrink-0">
+                <i class="fas fa-exclamation-triangle text-yellow-400"></i>
+            </div>
+            <div class="ml-3">
+                <p class="text-sm text-yellow-700">
+                    <strong>Firebase Rules Warning:</strong> The app is using local storage due to Firebase security rules.
+                    <a href="#" id="rulesInfoLink" class="font-medium underline text-yellow-700 hover:text-yellow-600">
+                        Learn more
+                    </a>
+                </p>
+            </div>
+            <button id="closeWarningBtn" class="ml-auto pl-3 text-yellow-500 hover:text-yellow-600">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+    </div>
+    
+    <!-- Header -->
+    <header class="app-header hero-pattern text-white">
+        <div class="container mx-auto px-4 py-8 flex justify-between items-center">
+            <div>
+                <h1 class="text-3xl font-bold">Welcome, <span id="userName">User</span>!</h1>
+                <p class="text-primary-light mt-1">Ready to start your journey?</p>
+            </div>
+            <div class="flex items-center space-x-4">
+                <a href="#" id="notificationsBtn" class="relative bg-white bg-opacity-20 p-3 rounded-full hover:bg-opacity-30 transition duration-200">
+                    <i class="fas fa-bell text-xl text-white"></i>
+                    <span id="notificationBadge" class="notification-badge hidden">0</span>
+                </a>
+                <button id="logoutBtn" class="bg-white bg-opacity-20 px-4 py-2 rounded-lg hover:bg-opacity-30 transition duration-200 text-sm font-medium">
+                    <i class="fas fa-sign-out-alt mr-1"></i>
+                    Logout
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <div class="container mx-auto px-4 py-6 -mt-6">
+        <!-- Quick Actions -->
+        <div class="grid grid-cols-2 gap-4 mb-8">
+            <a href="Untitled-2.html" class="card quick-action-card bg-white p-6 text-center">
+                <div class="quick-action-icon bg-primary-light">
+                    <i class="fas fa-car text-primary text-xl"></i>
+                </div>
+                <h3 class="font-semibold text-gray-900 text-lg">Post a Ride</h3>
+                <p class="text-sm text-gray-600 mt-1">Share your journey with others</p>
+                <div class="mt-4 inline-block text-primary font-medium text-sm">
+                    <span>Get Started</span>
+                    <i class="fas fa-arrow-right ml-1"></i>
+                </div>
+            </a>
+            <a href="Untitled-1.html" class="card quick-action-card bg-white p-6 text-center">
+                <div class="quick-action-icon bg-secondary-light">
+                    <i class="fas fa-search text-secondary text-xl"></i>
+                </div>
+                <h3 class="font-semibold text-gray-900 text-lg">Find a Ride</h3>
+                <p class="text-sm text-gray-600 mt-1">Join someone's journey</p>
+                <div class="mt-4 inline-block text-secondary font-medium text-sm">
+                    <span>Search Now</span>
+                    <i class="fas fa-arrow-right ml-1"></i>
+                </div>
+            </a>
+        </div>
+
+        <!-- Recent Activity -->
+        <div class="card p-6 mb-8 overflow-hidden">
+            <div class="flex justify-between items-center mb-4">
+                <h2 class="text-xl font-semibold text-gray-900">Recent Activity</h2>
+                <a href="Untitled-9.html" class="text-primary text-sm font-medium hover:text-primary-dark transition duration-200">
+                    View All
+                    <i class="fas fa-chevron-right ml-1 text-xs"></i>
+                </a>
+            </div>
+            <div id="recentActivity" class="space-y-4">
+                <!-- Loading skeleton -->
+                <div class="flex items-start space-x-4 skeleton-item">
+                    <div class="w-12 h-12 rounded-full skeleton"></div>
+                    <div class="flex-1">
+                        <div class="h-5 w-3/4 skeleton mb-2"></div>
+                        <div class="h-4 w-1/2 skeleton"></div>
+                    </div>
+                </div>
+                <div class="flex items-start space-x-4 skeleton-item">
+                    <div class="w-12 h-12 rounded-full skeleton"></div>
+                    <div class="flex-1">
+                        <div class="h-5 w-3/4 skeleton mb-2"></div>
+                        <div class="h-4 w-1/2 skeleton"></div>
+                    </div>
+                </div>
+                
+                <!-- No activity message (initially hidden) -->
+                <div id="noActivityMessage" class="empty-state hidden">
+                    <i class="fas fa-car-side empty-state-icon"></i>
+                    <p class="empty-state-text">No recent activity yet</p>
+                    <p class="empty-state-subtext">Your ride history will appear here</p>
+                    <a href="Untitled-2.html" class="mt-4 inline-block btn-primary">
+                        Post Your First Ride
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Statistics -->
+        <div class="grid grid-cols-2 gap-6 mb-8">
+            <div class="stat-card group">
+                <div class="flex items-center justify-between mb-3">
+                    <h3 class="font-semibold text-gray-900">Total Rides</h3>
+                    <div class="w-10 h-10 rounded-full bg-primary-light flex items-center justify-center group-hover:bg-primary group-hover:text-white transition-all duration-300">
+                        <i class="fas fa-route text-primary group-hover:text-white"></i>
+                    </div>
+                </div>
+                <p id="totalRides" class="stat-value">0</p>
+                <div class="flex items-center mt-1">
+                    <p class="stat-label">Last 30 days</p>
+                    <span class="ml-2 text-xs px-2 py-1 bg-green-100 text-green-800 rounded-full">+0%</span>
+                </div>
+            </div>
+            <div class="stat-card group">
+                <div class="flex items-center justify-between mb-3">
+                    <h3 class="font-semibold text-gray-900">CO₂ Saved</h3>
+                    <div class="w-10 h-10 rounded-full bg-green-100 flex items-center justify-center group-hover:bg-green-500 group-hover:text-white transition-all duration-300">
+                        <i class="fas fa-leaf text-green-600 group-hover:text-white"></i>
+                    </div>
+                </div>
+                <p id="co2Saved" class="stat-value">0 kg</p>
+                <div class="flex items-center mt-1">
+                    <p class="stat-label">By carpooling</p>
+                    <span class="ml-2 text-xs px-2 py-1 bg-green-100 text-green-800 rounded-full">Eco-friendly</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Available Rides -->
+        <div class="card p-6">
+            <div class="flex justify-between items-center mb-6">
+                <h2 class="text-xl font-semibold text-gray-900">Available Rides</h2>
+                <a href="Untitled-1.html" class="text-primary text-sm font-medium hover:text-primary-dark transition duration-200 flex items-center">
+                    View All
+                    <i class="fas fa-chevron-right ml-1 text-xs"></i>
+                </a>
+            </div>
+            <div id="availableRides" class="space-y-4">
+                <!-- Loading skeleton -->
+                <div class="ride-card p-4 skeleton-item">
+                    <div class="flex justify-between items-start mb-3">
+                        <div class="flex-1">
+                            <div class="h-6 w-1/2 skeleton mb-2"></div>
+                            <div class="h-4 w-2/3 skeleton"></div>
+                        </div>
+                        <div class="h-6 w-16 skeleton"></div>
+                    </div>
+                    <div class="flex items-center mt-4 justify-between">
+                        <div class="flex items-center space-x-2">
+                            <div class="w-8 h-8 rounded-full skeleton"></div>
+                            <div class="h-4 w-24 skeleton"></div>
+                        </div>
+                        <div class="h-8 w-20 skeleton rounded-lg"></div>
+                    </div>
+                </div>
+                <div class="ride-card p-4 skeleton-item">
+                    <div class="flex justify-between items-start mb-3">
+                        <div class="flex-1">
+                            <div class="h-6 w-1/2 skeleton mb-2"></div>
+                            <div class="h-4 w-2/3 skeleton"></div>
+                        </div>
+                        <div class="h-6 w-16 skeleton"></div>
+                    </div>
+                    <div class="flex items-center mt-4 justify-between">
+                        <div class="flex items-center space-x-2">
+                            <div class="w-8 h-8 rounded-full skeleton"></div>
+                            <div class="h-4 w-24 skeleton"></div>
+                        </div>
+                        <div class="h-8 w-20 skeleton rounded-lg"></div>
+                    </div>
+                </div>
+                
+                <!-- No rides message (initially hidden) -->
+                <div id="noRidesMessage" class="empty-state hidden">
+                    <i class="fas fa-car-side empty-state-icon"></i>
+                    <p class="empty-state-text">No rides available</p>
+                    <p class="empty-state-subtext">Be the first to post a ride!</p>
+                    <a href="Untitled-2.html" class="mt-4 inline-block btn-primary">
+                        Post a Ride
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bottom Navigation -->
+    <nav class="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 shadow-lg z-40">
+        <div class="flex justify-around items-center h-16">
+            <a href="Untitled-5.html" class="bottom-nav-item active flex flex-col items-center text-sm">
+                <i class="fas fa-home text-xl mb-1"></i>
+                <span>Home</span>
+            </a>
+            <a href="Untitled-1.html" class="bottom-nav-item flex flex-col items-center text-sm text-gray-600">
+                <i class="fas fa-search text-xl mb-1"></i>
+                <span>Find</span>
+            </a>
+            <a href="Untitled-2.html" class="bottom-nav-item flex flex-col items-center text-sm text-gray-600 relative">
+                <div class="absolute -top-4 w-14 h-14 bg-primary rounded-full flex items-center justify-center shadow-lg border-4 border-white">
+                    <i class="fas fa-plus text-white text-lg"></i>
+                </div>
+                <i class="fas fa-car text-xl mb-1 opacity-0"></i>
+                <span class="mt-1">Offer</span>
+            </a>
+            <a href="Untitled-9.html" class="bottom-nav-item flex flex-col items-center text-sm text-gray-600">
+                
+                <span>My Rides</span>
+            </a>
+            <a href="Untitled-4.html" class="bottom-nav-item flex flex-col items-center text-sm text-gray-600">
+    
+                <span>Profile</span>
+            </a>
+        </div>
+    </nav>
+
+    <!-- Notifications Modal (Hidden by default) -->
+    <div id="notificationsModal" class="fixed inset-0 modal-backdrop flex items-center justify-center z-50 hidden">
+        <div class="modal-content animate-fade-in">
+            <div class="p-5 border-b border-gray-200 flex justify-between items-center">
+                <h3 class="text-xl font-semibold text-gray-900">Notifications</h3>
+                <button id="closeNotificationsBtn" class="text-gray-500 hover:text-gray-700 w-8 h-8 flex items-center justify-center rounded-full hover:bg-gray-100">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div id="notificationsList" class="p-5 space-y-4">
+                <!-- Notifications will be loaded here -->
+                <div class="empty-state py-8">
+                    <i class="fas fa-bell empty-state-icon"></i>
+                    <p class="empty-state-text">No new notifications</p>
+                    <p class="empty-state-subtext">We'll notify you when there's activity</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Firebase SDK -->
+    <script type="module">
+        // Import Firebase functions
+        import { 
+            getCurrentUser, 
+            getUserProfile, 
+            getActiveRides, 
+            getUserRides, 
+            getUserBookings,
+            logoutUser,
+            onUserProfileChange
+        } from './firebase.js';
+        import { ref, onChildChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-database.js";
+        import { database } from './firebase.js';
+
+        // DOM Elements
+        const userName = document.getElementById('userName');
+        const logoutBtn = document.getElementById('logoutBtn');
+        const notificationsBtn = document.getElementById('notificationsBtn');
+        const notificationBadge = document.getElementById('notificationBadge');
+        const notificationsModal = document.getElementById('notificationsModal');
+        const closeNotificationsBtn = document.getElementById('closeNotificationsBtn');
+        const notificationsList = document.getElementById('notificationsList');
+        const recentActivity = document.getElementById('recentActivity');
+        const noActivityMessage = document.getElementById('noActivityMessage');
+        const totalRides = document.getElementById('totalRides');
+        const co2Saved = document.getElementById('co2Saved');
+        const availableRides = document.getElementById('availableRides');
+        const noRidesMessage = document.getElementById('noRidesMessage');
+        
+        // Firebase rules warning elements
+        const firebaseRulesWarning = document.getElementById('firebaseRulesWarning');
+        const rulesInfoLink = document.getElementById('rulesInfoLink');
+        const closeWarningBtn = document.getElementById('closeWarningBtn');
+        
+        // Check if user is logged in
+        let currentUser = null;
+        let userProfile = null;
+        
+        let notifications = JSON.parse(localStorage.getItem('notifications') || '[]');
+
+        function addNotification(notification) {
+            notifications.unshift(notification);
+            if (notifications.length > 20) notifications = notifications.slice(0, 20);
+            localStorage.setItem('notifications', JSON.stringify(notifications));
+            updateNotificationBadge();
+        }
+
+        function updateNotificationBadge() {
+            const unread = notifications.filter(n => !n.read).length;
+            if (unread > 0) {
+                notificationBadge.textContent = unread;
+                notificationBadge.classList.remove('hidden');
+                notificationBadge.classList.add('animate-pulse');
+            } else {
+                notificationBadge.classList.add('hidden');
+                notificationBadge.classList.remove('animate-pulse');
+            }
+        }
+
+        function renderNotifications() {
+            if (notifications.length === 0) {
+                notificationsList.innerHTML = `
+                    <div class="empty-state py-8">
+                        <i class="fas fa-bell empty-state-icon"></i>
+                        <p class="empty-state-text">No new notifications</p>
+                        <p class="empty-state-subtext">We'll notify you when there's activity</p>
+                    </div>
+                `;
+                return;
+            }
+            notificationsList.innerHTML = notifications.map((n, i) => `
+                <div class="card p-4 mb-3 animate-fade-in ${n.read ? '' : 'bg-green-50'}">
+                    <div class="flex items-start">
+                        <div class="w-10 h-10 bg-green-100 text-green-600 rounded-full flex items-center justify-center flex-shrink-0">
+                            <i class="fas fa-check"></i>
+                        </div>
+                        <div class="ml-3 flex-1">
+                            <div class="flex justify-between items-start">
+                                <p class="font-medium text-gray-900">${n.title}</p>
+                                ${!n.read ? '<span class="text-xs text-primary font-medium">New</span>' : ''}
+                            </div>
+                            <p class="text-sm text-gray-600 mt-1">${n.body}</p>
+                            <div class="flex justify-between items-center mt-2">
+                                <p class="text-xs text-gray-500">${n.time}</p>
+                                <button class="text-xs text-primary hover:text-primary-dark" onclick="markNotificationRead(${i})">Mark as read</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        window.markNotificationRead = function(idx) {
+            notifications[idx].read = true;
+            localStorage.setItem('notifications', JSON.stringify(notifications));
+            renderNotifications();
+            updateNotificationBadge();
+        };
+
+        function listenForBookingStatusChanges(passengerId) {
+            const bookingsRef = ref(database, 'bookings');
+            onChildChanged(bookingsRef, (snapshot) => {
+                const booking = snapshot.val();
+                if (booking.passengerId === passengerId && booking.status === 'approved') {
+                    const now = new Date();
+                    addNotification({
+                        title: 'Ride request approved',
+                        body: `Your ride request to ${booking.destination} was approved by ${booking.driverName}.`,
+                        time: now.toLocaleString(),
+                        read: false
+                    });
+                }
+            });
+        }
+        
+        async function checkAuthState() {
+            try {
+                currentUser = await getCurrentUser();
+                if (!currentUser) {
+                    window.location.href = 'login.html';
+                    return;
+                }
+                userProfile = await getUserProfile(currentUser.uid);
+                if (!userProfile) {
+                    window.location.href = 'Untitled-6.html';
+                    return;
+                }
+                onUserProfileChange(currentUser.uid, (updatedProfile) => {
+                    if (updatedProfile) {
+                        userProfile = updatedProfile;
+                        updateUserInfo();
+                    }
+                });
+                updateUserInfo();
+                loadRecentActivity();
+                loadStatistics();
+                loadAvailableRides();
+                // Listen for booking status changes (ride approved)
+                listenForBookingStatusChanges(currentUser.uid);
+                // Render notifications from localStorage
+                updateNotificationBadge();
+            } catch (error) {
+                console.error('Auth state check error:', error);
+                window.location.href = 'login.html';
+            }
+        }
+        
+        function updateUserInfo() {
+            // Update user name in header
+            if (userProfile && userProfile.fullName) {
+                userName.textContent = userProfile.fullName.split(' ')[0];
+            }
+        }
+        
+        async function loadRecentActivity() {
+            try {
+                // Get only the logged-in user's rides and bookings
+                const [userRides, userBookings] = await Promise.all([
+                    getUserRides(currentUser.uid),
+                    getUserBookings(currentUser.uid)
+                ]);
+                
+                // Combine and sort by date
+                const activities = [
+                    ...userRides.map(ride => ({
+                        type: 'ride',
+                        data: ride,
+                        date: new Date(ride.createdAt)
+                    })),
+                    ...userBookings.map(booking => ({
+                        type: 'booking',
+                        data: booking,
+                        date: new Date(booking.createdAt)
+                    }))
+                ].sort((a, b) => b.date - a.date).slice(0, 5);
+                
+                // Remove skeleton loaders with animation
+                const skeletons = recentActivity.querySelectorAll('.skeleton-item');
+                skeletons.forEach(skeleton => {
+                    skeleton.style.opacity = '0';
+                    skeleton.style.transition = 'opacity 0.3s ease';
+                    setTimeout(() => skeleton.remove(), 300);
+                });
+                
+                if (activities.length === 0) {
+                    setTimeout(() => {
+                        noActivityMessage.classList.remove('hidden');
+                        noActivityMessage.classList.add('animate-fade-in');
+                    }, 300);
+                    return;
+                }
+                
+                // Create activity items with enhanced styling and animations
+                setTimeout(() => {
+                    activities.forEach((activity, index) => {
+                        const activityItem = document.createElement('div');
+                        activityItem.className = 'flex items-start space-x-4 opacity-0 card p-4 mb-3';
+                        activityItem.style.animation = `fadeIn 0.5s ease ${index * 0.1}s forwards`;
+                        
+                        let iconClass, iconBgClass, title, subtitle, statusBadge = '';
+                        
+                        if (activity.type === 'ride') {
+                            const ride = activity.data;
+                            const status = ride.status || 'active';
+                            
+                            if (status === 'completed') {
+                                iconClass = 'fa-check';
+                                iconBgClass = 'bg-green-100 text-green-600';
+                                title = `Ride completed to ${ride.destination}`;
+                                statusBadge = '<span class="text-xs px-2 py-1 bg-green-100 text-green-800 rounded-full ml-2">Completed</span>';
+                            } else if (status === 'active') {
+                                iconClass = 'fa-car';
+                                iconBgClass = 'bg-primary-light text-primary';
+                                title = `Ride offered to ${ride.destination}`;
+                                statusBadge = '<span class="text-xs px-2 py-1 bg-primary-light text-primary rounded-full ml-2">Active</span>';
+                            } else {
+                                iconClass = 'fa-times';
+                                iconBgClass = 'bg-red-100 text-red-600';
+                                title = `Ride cancelled to ${ride.destination}`;
+                                statusBadge = '<span class="text-xs px-2 py-1 bg-red-100 text-red-800 rounded-full ml-2">Cancelled</span>';
+                            }
+                            
+                            // Format date
+                            const rideDate = new Date(ride.date);
+                            const formattedDate = rideDate.toLocaleDateString('en-US', { 
+                                month: 'short', 
+                                day: 'numeric' 
+                            });
+                            
+                            console.log("Ride object:", ride);
+                            console.log("Ride time:", ride.time);
+                            subtitle = `
+                                <div class="flex items-center mt-2">
+                                    <div class="flex items-center mr-3">
+                                        <i class="fas fa-calendar-alt text-gray-500 mr-1"></i>
+                                        <span>${formattedDate}</span>
+                                    </div>
+                                    <div class="flex items-center">
+                                        <i class="fas fa-clock text-gray-500 mr-1"></i>
+                                        <span>${formatTime12Hour(ride.time)}</span>
+                                    </div>
+                                    <div class="flex items-center ml-3">
+                                        <i class="fas fa-rupee-sign text-gray-500 mr-1"></i>
+                                        <span>${ride.price}</span>
+                                    </div>
+                                </div>
+                            `;
+                        } else {
+                            const booking = activity.data;
+                            const status = booking.status || 'pending';
+                            
+                            if (status === 'approved') {
+                                iconClass = 'fa-check-circle';
+                                iconBgClass = 'bg-green-100 text-green-600';
+                                title = `Booking confirmed to ${booking.destination || 'destination'}`;
+                                statusBadge = '<span class="text-xs px-2 py-1 bg-green-100 text-green-800 rounded-full ml-2">Approved</span>';
+                            } else if (status === 'pending') {
+                                iconClass = 'fa-clock';
+                                iconBgClass = 'bg-yellow-100 text-yellow-600';
+                                title = `Booking pending to ${booking.destination || 'destination'}`;
+                                statusBadge = '<span class="text-xs px-2 py-1 bg-yellow-100 text-yellow-800 rounded-full ml-2">Pending</span>';
+                            } else if (status === 'completed') {
+                                iconClass = 'fa-check-double';
+                                iconBgClass = 'bg-green-100 text-green-600';
+                                title = `Ride completed to ${booking.destination || 'destination'}`;
+                                statusBadge = '<span class="text-xs px-2 py-1 bg-green-100 text-green-800 rounded-full ml-2">Completed</span>';
+                            } else {
+                                iconClass = 'fa-times-circle';
+                                iconBgClass = 'bg-red-100 text-red-600';
+                                title = `Booking declined to ${booking.destination || 'destination'}`;
+                                statusBadge = '<span class="text-xs px-2 py-1 bg-red-100 text-red-800 rounded-full ml-2">Declined</span>';
+                            }
+                            
+                            // Format date if available
+                            let dateInfo = '';
+                            if (booking.date) {
+                                const bookingDate = new Date(booking.date);
+                                const formattedDate = bookingDate.toLocaleDateString('en-US', { 
+                                    month: 'short', 
+                                    day: 'numeric' 
+                                });
+                                
+                                console.log("Booking object:", booking);
+                                console.log("Booking time:", booking.time);
+                                dateInfo = `
+                                    <div class="flex items-center mt-2">
+                                        <div class="flex items-center mr-3">
+                                            <i class="fas fa-calendar-alt text-gray-500 mr-1"></i>
+                                            <span>${formattedDate}</span>
+                                        </div>
+                                        <div class="flex items-center">
+                                            <i class="fas fa-clock text-gray-500 mr-1"></i>
+                                            <span>${booking.time || 'N/A'}</span>
+                                        </div>
+                                        <div class="flex items-center ml-3">
+                                            <i class="fas fa-rupee-sign text-gray-500 mr-1"></i>
+                                            <span>${booking.price || 'N/A'}</span>
+                                        </div>
+                                    </div>
+                                `;
+                            }
+                            
+                            subtitle = dateInfo || `<p class="text-sm text-gray-600 mt-1">Booking ID: ${booking.id.substring(0, 8)}</p>`;
+                        }
+                        
+                        activityItem.innerHTML = `
+                            <div class="w-12 h-12 ${iconBgClass} rounded-full flex items-center justify-center flex-shrink-0">
+                                <i class="fas ${iconClass}"></i>
+                            </div>
+                            <div class="flex-1">
+                                <div class="flex items-center">
+                                    <p class="font-medium text-gray-900">${title}</p>
+                                    ${statusBadge}
+                                </div>
+                                <p class="text-sm text-gray-600 mt-1">
+                                    <i class="fas fa-map-marker-alt text-gray-500 mr-1"></i>
+                                    ${activity.data.startingPoint || 'Starting point'} to ${activity.data.destination || 'Destination'}
+                                </p>
+                                ${subtitle}
+                            </div>
+                        `;
+                        
+                        recentActivity.appendChild(activityItem);
+                    });
+                }, 300);
+            } catch (error) {
+                console.error('Error loading recent activity:', error);
+                
+                // Remove skeleton loaders with animation
+                const skeletons = recentActivity.querySelectorAll('.skeleton-item');
+                skeletons.forEach(skeleton => {
+                    skeleton.style.opacity = '0';
+                    skeleton.style.transition = 'opacity 0.3s ease';
+                    setTimeout(() => skeleton.remove(), 300);
+                });
+                
+                // Show error message with animation
+                setTimeout(() => {
+                    if (error.message && error.message.includes('PERMISSION_DENIED')) {
+                        recentActivity.innerHTML = `
+                            <div class="text-center py-6 animate-fade-in">
+                                <i class="fas fa-exclamation-triangle text-yellow-500 text-3xl mb-3"></i>
+                                <p class="text-gray-700 font-medium">Firebase Permission Error</p>
+                                <p class="text-sm text-gray-500 mb-3">Using local data until Firebase rules are updated</p>
+                                <button id="showRulesInfoBtn" class="mt-2 btn-outline text-sm">
+                                    <i class="fas fa-info-circle mr-1"></i> Show Rules Info
+                                </button>
+                            </div>
+                        `;
+                        
+                        // Add event listener for the rules info button
+                        document.getElementById('showRulesInfoBtn').addEventListener('click', function() {
+                            alert(`Firebase Rules Issue:
+
+Your Firebase database has security rules that are preventing read/write operations.
+
+To fix this, update your Firebase Realtime Database rules in the Firebase console:
+
+1. Go to the Firebase Console
+2. Select your project "raahi-2b943"
+3. Click on "Realtime Database" in the sidebar
+4. Click on the "Rules" tab
+5. Update the rules to allow authenticated users to read/write data
+
+See the firebase-rules-guide.txt file for detailed rules configuration.`);
+                        });
+                    } else {
+                        recentActivity.innerHTML = `
+                            <div class="text-center py-6 animate-fade-in">
+                                <i class="fas fa-exclamation-circle text-red-500 text-3xl mb-3"></i>
+                                <p class="text-gray-700 font-medium">Could not load recent activity</p>
+                                <p class="text-sm text-gray-500 mb-3">Please check your connection and try again</p>
+                                <button class="mt-2 btn-primary text-sm" onclick="window.location.reload()">
+                                    <i class="fas fa-redo mr-1"></i> Try Again
+                                </button>
+                            </div>
+                        `;
+                    }
+                }, 300);
+            }
+        }
+        
+        // Helper function to format time ago
+        function formatTimeAgo(dateString) {
+            const date = new Date(dateString);
+            const now = new Date();
+            const diffMs = now - date;
+            const diffSec = Math.floor(diffMs / 1000);
+            const diffMin = Math.floor(diffSec / 60);
+            const diffHour = Math.floor(diffMin / 60);
+            const diffDay = Math.floor(diffHour / 24);
+            
+            if (diffSec < 60) {
+                return 'Just now';
+            } else if (diffMin < 60) {
+                return `${diffMin} min ago`;
+            } else if (diffHour < 24) {
+                return `${diffHour} hr ago`;
+            } else if (diffDay < 7) {
+                return `${diffDay} day${diffDay > 1 ? 's' : ''} ago`;
+            } else {
+                return formatDate(dateString);
+            }
+        }
+        
+        async function loadStatistics() {
+            try {
+                // Get user's rides and bookings
+                const [userRides, userBookings] = await Promise.all([
+                    getUserRides(currentUser.uid),
+                    getUserBookings(currentUser.uid)
+                ]);
+                
+                // Calculate total rides in last 30 days
+                const thirtyDaysAgo = new Date();
+                thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+                
+                const recentRides = userRides.filter(ride => 
+                    new Date(ride.createdAt) >= thirtyDaysAgo
+                );
+                
+                const recentBookings = userBookings.filter(booking => 
+                    new Date(booking.createdAt) >= thirtyDaysAgo && 
+                    (booking.status === 'completed' || booking.status === 'approved')
+                );
+                
+                // Calculate previous month's rides for comparison
+                const sixtyDaysAgo = new Date();
+                sixtyDaysAgo.setDate(sixtyDaysAgo.getDate() - 60);
+                
+                const previousMonthRides = userRides.filter(ride => 
+                    new Date(ride.createdAt) >= sixtyDaysAgo && 
+                    new Date(ride.createdAt) < thirtyDaysAgo
+                );
+                
+                const previousMonthBookings = userBookings.filter(booking => 
+                    new Date(booking.createdAt) >= sixtyDaysAgo && 
+                    new Date(booking.createdAt) < thirtyDaysAgo && 
+                    (booking.status === 'completed' || booking.status === 'approved')
+                );
+                
+                const totalRidesCount = recentRides.length + recentBookings.length;
+                const previousMonthTotal = previousMonthRides.length + previousMonthBookings.length;
+                
+                // Calculate percentage change
+                let percentChange = 0;
+                let changeClass = 'bg-gray-100 text-gray-800';
+                
+                if (previousMonthTotal > 0) {
+                    percentChange = Math.round(((totalRidesCount - previousMonthTotal) / previousMonthTotal) * 100);
+                    
+                    if (percentChange > 0) {
+                        changeClass = 'bg-green-100 text-green-800';
+                    } else if (percentChange < 0) {
+                        changeClass = 'bg-red-100 text-red-800';
+                        percentChange = Math.abs(percentChange);
+                    }
+                }
+                
+                // Update total rides with animation
+                const currentTotal = parseInt(totalRides.textContent) || 0;
+                animateCounter(totalRides, currentTotal, totalRidesCount);
+                
+                // Update percentage change badge
+                const percentageElement = totalRides.parentElement.querySelector('.ml-2');
+                if (percentageElement) {
+                    percentageElement.className = `ml-2 text-xs px-2 py-1 rounded-full ${changeClass}`;
+                    percentageElement.textContent = percentChange === 0 ? 'No change' : `${percentChange > 0 ? '+' : '-'}${percentChange}%`;
+                }
+                
+                // Calculate CO2 saved (rough estimate: 0.5kg per ride)
+                const co2SavedAmount = Math.round(totalRidesCount * 0.5);
+                
+                // Update CO2 saved with animation
+                const currentCO2 = parseInt(co2Saved.textContent) || 0;
+                animateCounter(co2Saved, currentCO2, co2SavedAmount, ' kg');
+                
+            } catch (error) {
+                console.error('Error loading statistics:', error);
+                totalRides.textContent = '0';
+                co2Saved.textContent = '0 kg';
+            }
+        }
+        
+        // Helper function to animate counter
+        function animateCounter(element, start, end, suffix = '') {
+            const duration = 1000; // ms
+            const frameDuration = 1000 / 60; // 60fps
+            const totalFrames = Math.round(duration / frameDuration);
+            const increment = (end - start) / totalFrames;
+            
+            let currentFrame = 0;
+            let currentValue = start;
+            
+            const animate = () => {
+                currentFrame++;
+                currentValue += increment;
+                
+                element.textContent = Math.round(currentValue) + suffix;
+                
+                if (currentFrame < totalFrames) {
+                    requestAnimationFrame(animate);
+                } else {
+                    element.textContent = end + suffix;
+                }
+            };
+            
+            animate();
+        }
+        
+        async function loadAvailableRides() {
+            try {
+                // Get all active rides (from all users)
+                const rides = await getActiveRides();
+                // Filter out expired rides
+                const currentTimeIST = new Date(new Date().toLocaleString('en-US', { timeZone: 'Asia/Kolkata' }));
+                const activeRides = rides.filter(ride => {
+                    if (!ride.time || !ride.date) return false;
+                    try {
+                        const [hours, minutes] = ride.time.split(':');
+                        if (!hours || !minutes) return false;
+                        const rideDate = new Date(ride.date);
+                        if (isNaN(rideDate.getTime())) return false;
+                        rideDate.setHours(parseInt(hours), parseInt(minutes));
+                        const rideDateIST = new Date(rideDate.toLocaleString('en-US', { timeZone: 'Asia/Kolkata' }));
+                        return rideDateIST > currentTimeIST;
+                    } catch (error) {
+                        return false;
+                    }
+                });
+                // Sort by date and time (nearest first)
+                const sortedRides = activeRides.sort((a, b) => {
+                    try {
+                        const dateA = new Date(a.date + ' ' + a.time);
+                        const dateB = new Date(b.date + ' ' + b.time);
+                        return dateA - dateB;
+                    } catch (error) {
+                        return 0;
+                    }
+                });
+
+                // Clear old cards/skeletons
+                availableRides.innerHTML = "";
+
+                // Render all rides (defensive, fallback values)
+                sortedRides.forEach(async (ride, index) => {
+                    try {
+                        const driverProfile = await getUserProfile(ride.driverId);
+                        const driverName = driverProfile?.fullName || 'Unknown Driver';
+                        const driverImage = driverProfile?.profilePicture || 'https://via.placeholder.com/150';
+                        const startingPoint = ride.startingPoint || 'Unknown';
+                        const destination = ride.destination || 'Unknown';
+                        const price = ride.price !== undefined ? ride.price : 'N/A';
+                        const time = ride.time || 'N/A';
+                        const date = ride.date || '';
+                        let dateText = 'N/A';
+                        if (date && time) {
+                            const [hours, minutes] = time.split(':');
+                            if (hours && minutes) {
+                                const rideDate = new Date(date);
+                                if (!isNaN(rideDate.getTime())) {
+                                    rideDate.setHours(parseInt(hours), parseInt(minutes));
+                                    const rideDateIST = new Date(rideDate.toLocaleString('en-US', { timeZone: 'Asia/Kolkata' }));
+                                    const todayIST = new Date(new Date().toLocaleString('en-US', { timeZone: 'Asia/Kolkata' }));
+                                    const tomorrowIST = new Date(todayIST);
+                                    tomorrowIST.setDate(todayIST.getDate() + 1);
+                                    if (rideDateIST.toDateString() === todayIST.toDateString()) {
+                                        dateText = 'Today';
+                                    } else if (rideDateIST.toDateString() === tomorrowIST.toDateString()) {
+                                        dateText = 'Tomorrow';
+                                    } else {
+                                        dateText = rideDateIST.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+                                    }
+                                }
+                            }
+                        }
+                        let seatStatus, seatColor;
+                        const availableSeats = parseInt(ride.availableSeats) || 0;
+                        if (availableSeats === 0) {
+                            seatStatus = 'Full';
+                            seatColor = 'text-red-600 bg-red-50';
+                        } else if (availableSeats <= 2) {
+                            seatStatus = `${availableSeats} seats left`;
+                            seatColor = 'text-yellow-600 bg-yellow-50';
+                        } else {
+                            seatStatus = `${availableSeats} seats left`;
+                            seatColor = 'text-green-600 bg-green-50';
+                        }
+                        const rideCard = document.createElement('div');
+                        rideCard.className = 'ride-card p-4 cursor-pointer opacity-0';
+                        rideCard.style.animation = `fadeIn 0.5s ease ${index * 0.1}s forwards`;
+                        rideCard.innerHTML = `
+                            <div class="flex justify-between items-start mb-4">
+                                <div>
+                                    <div class="flex items-center">
+                                        <h3 class="font-semibold text-gray-900">${startingPoint} to ${destination}</h3>
+                                        <span class="ml-2 text-xs px-2 py-1 rounded-full ${seatColor}">${seatStatus}</span>
+                                    </div>
+                                    <div class="flex items-center mt-1 text-sm text-gray-600">
+                                        <div class="flex items-center mr-3">
+                                            <i class="fas fa-calendar-alt text-primary mr-1"></i>
+                                            <span>${dateText}</span>
+                                        </div>
+                                        <div class="flex items-center">
+                                            <i class="fas fa-clock text-primary mr-1"></i>
+                                            <span>${formatTime12Hour(time)}</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="text-lg font-bold text-primary">₹${price}</div>
+                            </div>
+                            <div class="flex items-center justify-between">
+                                <div class="flex items-center">
+                                    <img src="${driverImage}" alt="Driver" class="w-8 h-8 rounded-full object-cover border-2 border-primary-light">
+                                    <div class="ml-2">
+                                        <p class="text-sm font-medium">${driverName}</p>
+                                        <div class="flex items-center">
+                                            <i class="fas fa-star text-yellow-400 text-xs"></i>
+                                            <span class="text-xs text-gray-600 ml-1">4.8</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                <button class="px-3 py-1.5 bg-primary text-white text-sm rounded-lg hover:bg-primary-dark transition duration-200" onclick="event.stopPropagation(); sessionStorage.setItem('selectedRideId', '${ride.id}'); window.location.href = 'ride-details.html';">
+                                    Book Now
+                                </button>
+                            </div>
+                        `;
+                        rideCard.addEventListener('click', () => {
+                            sessionStorage.setItem('selectedRideId', ride.id);
+                            window.location.href = 'ride-details.html';
+                        });
+                        availableRides.appendChild(rideCard);
+                    } catch (error) {
+                        console.error('Error loading ride:', error);
+                    }
+                });
+            } catch (error) {
+                console.error('Error loading available rides:', error);
+                
+                // Remove skeleton loaders with animation
+                const skeletons = availableRides.querySelectorAll('.skeleton-item');
+                skeletons.forEach(skeleton => {
+                    skeleton.style.opacity = '0';
+                    skeleton.style.transition = 'opacity 0.3s ease';
+                    setTimeout(() => skeleton.remove(), 300);
+                });
+                
+                // Show error message with animation
+                setTimeout(() => {
+                    if (error.message && error.message.includes('PERMISSION_DENIED')) {
+                        availableRides.innerHTML = `
+                            <div class="text-center py-6 animate-fade-in">
+                                <i class="fas fa-exclamation-triangle text-yellow-500 text-3xl mb-3"></i>
+                                <p class="text-gray-700 font-medium">Firebase Permission Error</p>
+                                <p class="text-sm text-gray-500 mb-3">Using local data until Firebase rules are updated</p>
+                                <button id="showRidesRulesInfoBtn" class="mt-2 btn-outline text-sm">
+                                    <i class="fas fa-info-circle mr-1"></i> Show Rules Info
+                                </button>
+                            </div>
+                        `;
+                        
+                        // Add event listener for the rules info button
+                        document.getElementById('showRidesRulesInfoBtn').addEventListener('click', function() {
+                            alert(`Firebase Rules Issue:
+
+Your Firebase database has security rules that are preventing read/write operations.
+
+To fix this, update your Firebase Realtime Database rules in the Firebase console:
+
+1. Go to the Firebase Console
+2. Select your project "raahi-2b943"
+3. Click on "Realtime Database" in the sidebar
+4. Click on the "Rules" tab
+5. Update the rules to allow authenticated users to read/write data
+
+See the firebase-rules-guide.txt file for detailed rules configuration.`);
+                        });
+                    } else {
+                        availableRides.innerHTML = `
+                            <div class="text-center py-6 animate-fade-in">
+                                <i class="fas fa-exclamation-circle text-red-500 text-3xl mb-3"></i>
+                                <p class="text-gray-700 font-medium">Could not load available rides</p>
+                                <p class="text-sm text-gray-500 mb-3">Please check your connection and try again</p>
+                                <button class="mt-2 btn-primary text-sm" onclick="window.location.reload()">
+                                    <i class="fas fa-redo mr-1"></i> Try Again
+                                </button>
+                            </div>
+                        `;
+                    }
+                }, 300);
+            }
+        }
+        
+        // Event Listeners
+        logoutBtn.addEventListener('click', async () => {
+            try {
+                // Show loading state
+                logoutBtn.innerHTML = `
+                    <div class="flex items-center">
+                        <svg class="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                        </svg>
+                        Logging out...
+                    </div>
+                `;
+                logoutBtn.disabled = true;
+                
+                await logoutUser();
+                window.location.href = 'login.html';
+            } catch (error) {
+                console.error('Logout error:', error);
+                
+                // Reset button
+                logoutBtn.innerHTML = `
+                    <i class="fas fa-sign-out-alt mr-1"></i>
+                    Logout
+                `;
+                logoutBtn.disabled = false;
+                
+                // Show error
+                alert('Failed to log out. Please try again.');
+            }
+        });
+        
+        notificationsBtn.addEventListener('click', () => {
+            notificationsModal.classList.remove('hidden');
+            notificationBadge.classList.add('hidden');
+            // Mark all as read
+            notifications.forEach(n => n.read = true);
+            localStorage.setItem('notifications', JSON.stringify(notifications));
+            renderNotifications();
+            updateNotificationBadge();
+        });
+        
+        closeNotificationsBtn.addEventListener('click', () => {
+            notificationsModal.classList.add('hidden');
+        });
+        
+        // Close modal when clicking outside
+        notificationsModal.addEventListener('click', (e) => {
+            if (e.target === notificationsModal) {
+                notificationsModal.classList.add('hidden');
+            }
+        });
+        
+        // Firebase rules warning handlers
+        rulesInfoLink.addEventListener('click', function(e) {
+            e.preventDefault();
+            alert(`Firebase Rules Issue:
+
+Your Firebase database has security rules that are preventing read/write operations.
+
+To fix this, update your Firebase Realtime Database rules in the Firebase console:
+
+1. Go to the Firebase Console
+2. Select your project "raahi-2b943"
+3. Click on "Realtime Database" in the sidebar
+4. Click on the "Rules" tab
+5. Update the rules to allow authenticated users to read/write data
+
+See the firebase-rules-guide.txt file for detailed rules configuration.`);
+        });
+        
+        closeWarningBtn.addEventListener('click', function() {
+            firebaseRulesWarning.classList.add('hidden');
+        });
+        
+        // Initialize
+        window.addEventListener('DOMContentLoaded', checkAuthState);
+        renderNotifications();
+        updateNotificationBadge();
+
+        function formatTime12Hour(timeStr) {
+            if (!timeStr) return 'N/A';
+            const [hour, minute] = timeStr.split(':');
+            if (hour === undefined || minute === undefined) return 'N/A';
+            let h = parseInt(hour, 10);
+            const m = minute.padStart(2, '0');
+            if (isNaN(h)) return 'N/A';
+            const ampm = h >= 12 ? 'PM' : 'AM';
+            h = h % 12;
+            if (h === 0) h = 12;
+            return `${h}:${m} ${ampm}`;
+        }
+    </script>
+</body>
+
+</html>

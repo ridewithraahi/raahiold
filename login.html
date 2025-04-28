@@ -1,0 +1,543 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Welcome to Raahi</title>
+    <script type="module" src="./firebase.js"></script>
+    <script type="module" src="./twilio.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link rel="stylesheet" href="styles.css">
+    <style>
+        .error-message {
+            color: #dc2626;
+            font-size: 0.875rem;
+            margin-top: 0.5rem;
+            display: none;
+        }
+
+        .loading-spinner {
+            display: none;
+            border: 3px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            border-top: 3px solid #fff;
+            width: 20px;
+            height: 20px;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .login-card {
+            background-color: var(--background-white);
+            color: var(--text-dark);
+            transition: all 0.3s ease;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+            backdrop-filter: blur(10px);
+        }
+        
+        .dark-theme .login-card {
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+        }
+        
+        .form-input {
+            background-color: var(--background-light);
+            color: var(--text-dark);
+            border-color: var(--border);
+        }
+        
+        .dark-theme .form-input {
+            background-color: rgba(30, 30, 30, 0.8);
+        }
+        
+        .login-bg {
+            background-image: url('https://images.pexels.com/photos/7621123/pexels-photo-7621123.jpeg?auto=compress&cs=tinysrgb&w=1600');
+            background-size: cover;
+            background-position: center;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            filter: blur(8px);
+            opacity: 0.2;
+        }
+        
+        .dark-theme .login-bg {
+            opacity: 0.1;
+        }
+    </style>
+</head>
+
+<body class="min-h-screen">
+    <!-- Theme Toggle Button -->
+    <button id="themeToggle" class="theme-toggle">
+        <i class="fas fa-moon"></i>
+    </button>
+    
+    <!-- Background Image with Blur -->
+    <div class="login-bg"></div>
+    
+    <div class="container mx-auto px-4 pt-1 pb-2">
+        <div class="max-w-md mx-auto login-card rounded-xl overflow-hidden">
+            <div class="p-8">
+                <div class="text-center mb-8">
+                    <img src="./images/logo.png" alt="Raahi Logo" class="logo mx-auto mb-0">
+                    <h1 class="text-3xl font-bold mb-0">Welcome to Raahi</h1>
+                    <p class="text-xl font-medium text-green-600 mb-2">Your College Carpool Buddy!</p>
+                    <p class="text-secondary">Connect with fellow Bennett students for convenient and eco-friendly rides.</p>
+                </div>
+
+                <!-- Login/Signup Tabs -->
+                <div class="flex border-b border-gray-200 mb-6">
+                    <button id="loginTab" class="flex-1 py-2 font-medium text-center border-b-2 border-green-600 text-green-600">Sign In</button>
+                    <button id="signupTab" class="flex-1 py-2 font-medium text-center text-gray-500">Create Account</button>
+                </div>
+
+                <!-- Login Form -->
+                <form id="loginForm" class="space-y-6">
+                    <div>
+                        <label class="block text-sm font-medium mb-2">Phone Number</label>
+                        <div class="relative">
+                            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                <i class="fas fa-phone text-gray-400"></i>
+                            </div>
+                            <input type="tel" id="loginPhone" class="form-input pl-10 block w-full rounded-lg border p-2.5 focus:ring-2 focus:ring-green-500 focus:border-green-500" placeholder="+91 9876543210" required>
+                        </div>
+                        <p id="loginPhoneError" class="error-message">Please enter a valid phone number</p>
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-medium mb-2">Password</label>
+                        <div class="relative">
+                            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                <i class="fas fa-lock text-gray-400"></i>
+                            </div>
+                            <input type="password" id="loginPassword" class="form-input pl-10 block w-full rounded-lg border p-2.5 focus:ring-2 focus:ring-green-500 focus:border-green-500" placeholder="Enter your password" required>
+                        </div>
+                        <p id="loginPasswordError" class="error-message">Password must be at least 6 characters</p>
+                    </div>
+
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center">
+                            <input type="checkbox" id="remember" class="h-4 w-4 text-green-600 focus:ring-green-500 border-gray-300 rounded">
+                            <label for="remember" class="ml-2 block text-sm">Remember me</label>
+                        </div>
+                        <a href="#" id="forgotPassword" class="text-sm font-medium text-green-600 hover:text-green-500">Forgot password?</a>
+                    </div>
+
+                    <button type="submit" id="loginButton" class="w-full bg-green-600 text-white py-3 rounded-lg font-semibold hover:bg-green-700 transition duration-200 flex items-center justify-center">
+                        <i class="fas fa-sign-in-alt mr-2"></i>
+                        <span>Sign In</span>
+                        <div id="loginSpinner" class="loading-spinner ml-2"></div>
+                    </button>
+
+                    <p id="loginError" class="error-message text-center"></p>
+                </form>
+
+                <!-- Signup Form (Initially Hidden) -->
+                <form id="signupForm" class="space-y-6 hidden">
+                    <div>
+                        <label class="block text-sm font-medium mb-2">Phone Number <span class="text-red-500">*</span></label>
+                        <div class="relative">
+                            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                <i class="fas fa-phone text-gray-400"></i>
+                            </div>
+                            <input type="tel" id="signupPhone" class="form-input pl-10 block w-full rounded-lg border p-2.5 focus:ring-2 focus:ring-green-500 focus:border-green-500" placeholder="+91 9876543210" required>
+                            <button type="button" id="signupSendOtpBtn" class="absolute right-2 top-1/2 transform -translate-y-1/2 px-3 py-1 bg-green-600 text-white rounded-md text-sm hover:bg-green-700">
+                                Send OTP
+                            </button>
+                        </div>
+                        <p id="signupPhoneError" class="error-message">Please enter a valid Indian phone number</p>
+                    </div>
+
+                    <div id="signupOtpSection" class="hidden">
+                        <label class="block text-sm font-medium mb-2">Enter OTP <span class="text-red-500">*</span></label>
+                        <div class="relative">
+                            <input type="text" id="signupOtpInput" class="form-input block w-full rounded-lg border p-2.5 focus:ring-2 focus:ring-green-500 focus:border-green-500" placeholder="Enter 6-digit OTP" maxlength="6" required>
+                            <div id="signupOtpTimer" class="absolute right-2 top-1/2 transform -translate-y-1/2 text-sm text-gray-500"></div>
+                        </div>
+                        <p id="signupOtpError" class="error-message">Invalid OTP</p>
+                        <button type="button" id="signupResendOtpBtn" class="mt-2 text-sm text-green-600 hover:text-green-700 hidden">
+                            Resend OTP
+                        </button>
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-medium mb-2">Bennett University Email <span class="text-gray-500">(Optional)</span></label>
+                        <div class="relative">
+                            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                <i class="fas fa-envelope text-gray-400"></i>
+                            </div>
+                            <input type="email" id="signupEmail" class="form-input pl-10 block w-full rounded-lg border p-2.5 focus:ring-2 focus:ring-green-500 focus:border-green-500" placeholder="your.name@bennett.edu.in" pattern=".+@bennett\.edu\.in$">
+                        </div>
+                        <p id="signupEmailError" class="error-message">Please use your Bennett University email address</p>
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-medium mb-2">Password <span class="text-red-500">*</span></label>
+                        <div class="relative">
+                            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                <i class="fas fa-lock text-gray-400"></i>
+                            </div>
+                            <input type="password" id="signupPassword" class="form-input pl-10 block w-full rounded-lg border p-2.5 focus:ring-2 focus:ring-green-500 focus:border-green-500" placeholder="Create a password (min. 6 characters)" required>
+                        </div>
+                        <p id="signupPasswordError" class="error-message">Password must be at least 6 characters</p>
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-medium mb-2">Confirm Password <span class="text-red-500">*</span></label>
+                        <div class="relative">
+                            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                <i class="fas fa-lock text-gray-400"></i>
+                            </div>
+                            <input type="password" id="confirmPassword" class="form-input pl-10 block w-full rounded-lg border p-2.5 focus:ring-2 focus:ring-green-500 focus:border-green-500" placeholder="Confirm your password" required>
+                        </div>
+                        <p id="confirmPasswordError" class="error-message">Passwords do not match</p>
+                    </div>
+
+                    <div class="flex items-center">
+                        <input type="checkbox" id="termsAgree" class="h-4 w-4 text-green-600 focus:ring-green-500 border-gray-300 rounded" required>
+                        <label for="termsAgree" class="ml-2 block text-sm">
+                            I agree to the <a href="#" class="text-green-600 hover:text-green-500">Terms of Service</a> and <a href="#" class="text-green-600 hover:text-green-500">Privacy Policy</a>
+                        </label>
+                    </div>
+
+                    <button type="submit" id="signupSubmitBtn" class="w-full bg-green-600 text-white py-3 rounded-lg font-semibold hover:bg-green-700 transition duration-200 flex items-center justify-center">
+                        <i class="fas fa-user-plus mr-2"></i>
+                        <span>Create Account</span>
+                        <div id="signupSpinner" class="loading-spinner ml-2 hidden"></div>
+                    </button>
+
+                    <p id="signupError" class="error-message text-center"></p>
+                </form>
+            </div>
+        </div>
+
+        <!-- Features Section -->
+        <div class="max-w-2xl mx-auto mt-12 grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div class="card p-6 rounded-xl text-center">
+                <i class="fas fa-shield-alt text-3xl text-green-600 mb-4"></i>
+                <h3 class="font-semibold mb-2">Verified Community</h3>
+                <p class="text-sm">Exclusive to Bennett University students for a safe carpooling experience.</p>
+            </div>
+
+            <div class="card p-6 rounded-xl text-center">
+                <i class="fas fa-coins text-3xl text-green-600 mb-4"></i>
+                <h3 class="font-semibold mb-2">Cost Sharing</h3>
+                <p class="text-sm">Split travel costs with fellow students and save money on your commute.</p>
+            </div>
+
+            <div class="card p-6 rounded-xl text-center">
+                <i class="fas fa-leaf text-3xl text-green-600 mb-4"></i>
+                <h3 class="font-semibold mb-2">Eco-Friendly</h3>
+                <p class="text-sm">Reduce your carbon footprint by sharing rides with others.</p>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Theme Toggle Script -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const themeToggle = document.getElementById('themeToggle');
+            const body = document.body;
+            const icon = themeToggle.querySelector('i');
+            
+            // Check for saved theme preference or use preferred color scheme
+            const savedTheme = localStorage.getItem('theme');
+            const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+            
+            if (savedTheme === 'dark' || (!savedTheme && prefersDark)) {
+                body.classList.add('dark-theme');
+                icon.classList.remove('fa-moon');
+                icon.classList.add('fa-sun');
+            }
+            
+            // Toggle theme on button click
+            themeToggle.addEventListener('click', function() {
+                body.classList.toggle('dark-theme');
+                
+                if (body.classList.contains('dark-theme')) {
+                    localStorage.setItem('theme', 'dark');
+                    icon.classList.remove('fa-moon');
+                    icon.classList.add('fa-sun');
+                } else {
+                    localStorage.setItem('theme', 'light');
+                    icon.classList.remove('fa-sun');
+                    icon.classList.add('fa-moon');
+                }
+            });
+        });
+    </script>
+    <!-- Firebase SDK -->
+    <script type="module">
+        import { sendOTP, verifyOTP, isOTPExpired, getOTPRemainingTime } from './twilio.js';
+        import { loginUser, registerUser } from './firebase.js';
+
+        document.addEventListener('DOMContentLoaded', function() {
+            // Get form elements
+            const loginTab = document.getElementById('loginTab');
+            const signupTab = document.getElementById('signupTab');
+            const loginForm = document.getElementById('loginForm');
+            const signupForm = document.getElementById('signupForm');
+            
+            // Login elements
+            const loginPhone = document.getElementById('loginPhone');
+            const loginPassword = document.getElementById('loginPassword');
+            const loginError = document.getElementById('loginError');
+            const loginSpinner = document.getElementById('loginSpinner');
+            
+            // Signup elements
+            const signupPhone = document.getElementById('signupPhone');
+            const signupSendOtpBtn = document.getElementById('signupSendOtpBtn');
+            const signupOtpSection = document.getElementById('signupOtpSection');
+            const signupOtpInput = document.getElementById('signupOtpInput');
+            const signupOtpTimer = document.getElementById('signupOtpTimer');
+            const signupResendOtpBtn = document.getElementById('signupResendOtpBtn');
+            const signupEmail = document.getElementById('signupEmail');
+            const signupPassword = document.getElementById('signupPassword');
+            const confirmPassword = document.getElementById('confirmPassword');
+            const termsAgree = document.getElementById('termsAgree');
+            const signupSubmitBtn = document.getElementById('signupSubmitBtn');
+            const signupSpinner = document.getElementById('signupSpinner');
+            const signupError = document.getElementById('signupError');
+
+            let otpTimerInterval;
+
+            // Phone number validation
+            function validatePhoneNumber(phone) {
+                const cleaned = phone.replace(/\D/g, '');
+                return /^[6-9]\d{9}$/.test(cleaned) || /^91[6-9]\d{9}$/.test(cleaned);
+            }
+
+            // Show error message
+            function showError(elementId, message) {
+                const errorElement = document.getElementById(elementId);
+                if (errorElement) {
+                    errorElement.textContent = message;
+                    errorElement.style.display = 'block';
+                }
+            }
+
+            // Hide error message
+            function hideError(elementId) {
+                const errorElement = document.getElementById(elementId);
+                if (errorElement) {
+                    errorElement.style.display = 'none';
+                }
+            }
+
+            // Start OTP timer
+            function startOtpTimer() {
+                clearInterval(otpTimerInterval);
+                updateOtpTimerDisplay();
+                
+                otpTimerInterval = setInterval(() => {
+                    if (isOTPExpired()) {
+                        clearInterval(otpTimerInterval);
+                        signupOtpTimer.textContent = 'OTP Expired';
+                        signupResendOtpBtn.classList.remove('hidden');
+                        return;
+                    }
+                    updateOtpTimerDisplay();
+                }, 1000);
+            }
+
+            // Update OTP timer display
+            function updateOtpTimerDisplay() {
+                const remaining = getOTPRemainingTime();
+                const minutes = Math.floor(remaining / 60);
+                const seconds = remaining % 60;
+                signupOtpTimer.textContent = `${minutes}:${seconds.toString().padStart(2, '0')}`;
+            }
+
+            // Send OTP handler
+            signupSendOtpBtn.addEventListener('click', async () => {
+                try {
+                    if (!validatePhoneNumber(signupPhone.value)) {
+                        showError('signupPhoneError', 'Please enter a valid Indian phone number');
+                        return;
+                    }
+
+                    hideError('signupPhoneError');
+                    signupSendOtpBtn.disabled = true;
+                    signupSendOtpBtn.innerHTML = '<span class="loading-spinner"></span>';
+
+                    await sendOTP(signupPhone.value);
+
+                    signupOtpSection.classList.remove('hidden');
+                    startOtpTimer();
+                    signupPhone.disabled = true;
+                    signupSendOtpBtn.textContent = 'OTP Sent';
+
+                } catch (error) {
+                    showError('signupPhoneError', error.message);
+                    signupSendOtpBtn.disabled = false;
+                    signupSendOtpBtn.textContent = 'Send OTP';
+                }
+            });
+
+            // Resend OTP handler
+            signupResendOtpBtn.addEventListener('click', async () => {
+                try {
+                    signupResendOtpBtn.disabled = true;
+                    signupResendOtpBtn.textContent = 'Sending...';
+                    hideError('signupOtpError');
+
+                    await sendOTP(signupPhone.value);
+
+                    startOtpTimer();
+                    signupResendOtpBtn.classList.add('hidden');
+                    signupOtpInput.value = '';
+
+                } catch (error) {
+                    showError('signupOtpError', error.message);
+                } finally {
+                    signupResendOtpBtn.disabled = false;
+                    signupResendOtpBtn.textContent = 'Resend OTP';
+                }
+            });
+
+            // Signup form submission
+            signupForm.addEventListener('submit', async (e) => {
+                e.preventDefault();
+
+                try {
+                    // Validate all fields
+                    if (!validatePhoneNumber(signupPhone.value)) {
+                        showError('signupPhoneError', 'Please enter a valid Indian phone number');
+                        return;
+                    }
+
+                    if (signupPassword.value.length < 6) {
+                        showError('signupPasswordError', 'Password must be at least 6 characters');
+                        return;
+                    }
+
+                    if (signupPassword.value !== confirmPassword.value) {
+                        showError('confirmPasswordError', 'Passwords do not match');
+                        return;
+                    }
+
+                    if (signupEmail.value && !signupEmail.value.endsWith('@bennett.edu.in')) {
+                        showError('signupEmailError', 'Please use your Bennett University email address');
+                        return;
+                    }
+
+                    if (!termsAgree.checked) {
+                        showError('signupError', 'Please accept the terms and conditions');
+                        return;
+                    }
+
+                    // Verify OTP
+                    if (!signupOtpInput.value) {
+                        showError('signupOtpError', 'Please enter the OTP');
+                        return;
+                    }
+
+                    signupSubmitBtn.disabled = true;
+                    signupSpinner.classList.remove('hidden');
+                    hideError('signupError');
+
+                    // Verify OTP
+                    const isOtpValid = await verifyOTP(signupPhone.value, signupOtpInput.value);
+                    if (!isOtpValid) {
+                        showError('signupOtpError', 'Invalid OTP');
+                        return;
+                    }
+
+                    // Register user
+                    await registerUser(signupPhone.value, signupPassword.value);
+
+                    // Redirect to profile completion
+                    window.location.href = 'complete-profile.html';
+
+                } catch (error) {
+                    showError('signupError', error.message);
+                } finally {
+                    signupSubmitBtn.disabled = false;
+                    signupSpinner.classList.add('hidden');
+                }
+            });
+
+            // Login form submission
+            loginForm.addEventListener('submit', async (e) => {
+                e.preventDefault();
+
+                try {
+                    if (!validatePhoneNumber(loginPhone.value)) {
+                        showError('loginPhoneError', 'Please enter a valid phone number');
+                        return;
+                    }
+
+                    hideError('loginError');
+                    loginSpinner.style.display = 'inline-block';
+
+                    const user = await loginUser(loginPhone.value, loginPassword.value);
+                    window.location.href = 'dashboard.html';
+
+                } catch (error) {
+                    showError('loginError', 'Invalid phone number or password');
+                } finally {
+                    loginSpinner.style.display = 'none';
+                }
+            });
+
+            // Tab switching
+            loginTab.addEventListener('click', () => {
+                loginTab.classList.add('border-b-2', 'border-green-600', 'text-green-600');
+                loginTab.classList.remove('text-gray-500');
+                signupTab.classList.remove('border-b-2', 'border-green-600', 'text-green-600');
+                signupTab.classList.add('text-gray-500');
+                loginForm.classList.remove('hidden');
+                signupForm.classList.add('hidden');
+                clearAllErrors();
+            });
+
+            signupTab.addEventListener('click', () => {
+                signupTab.classList.add('border-b-2', 'border-green-600', 'text-green-600');
+                signupTab.classList.remove('text-gray-500');
+                loginTab.classList.remove('border-b-2', 'border-green-600', 'text-green-600');
+                loginTab.classList.add('text-gray-500');
+                signupForm.classList.remove('hidden');
+                loginForm.classList.add('hidden');
+                clearAllErrors();
+            });
+
+            // Clear all errors and reset forms
+            function clearAllErrors() {
+                const errorElements = document.querySelectorAll('.error-message');
+                errorElements.forEach(el => el.style.display = 'none');
+
+                const inputs = document.querySelectorAll('input');
+                inputs.forEach(input => {
+                    if (input.type !== 'checkbox') {
+                        input.value = '';
+                        input.disabled = false;
+                    } else {
+                        input.checked = false;
+                    }
+                });
+
+                signupOtpSection.classList.add('hidden');
+                signupSendOtpBtn.disabled = false;
+                signupSendOtpBtn.textContent = 'Send OTP';
+                clearInterval(otpTimerInterval);
+            }
+
+            // Clean up on page unload
+            window.addEventListener('unload', () => {
+                clearInterval(otpTimerInterval);
+            });
+        });
+    </script>
+</body>
+
+</html>

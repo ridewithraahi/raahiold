@@ -1,0 +1,399 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Profile - Raahi</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            padding-bottom: 4rem;
+        }
+        
+        .bottom-nav-item.active {
+            color: #000;
+        }
+
+        .loading-spinner {
+            display: inline-block;
+            border: 3px solid rgba(0, 0, 0, 0.1);
+            border-radius: 50%;
+            border-top: 3px solid #10b981;
+            width: 24px;
+            height: 24px;
+            animation: spin 1s linear infinite;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .skeleton {
+            background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+            background-size: 200% 100%;
+            animation: loading 1.5s infinite;
+        }
+        
+        @keyframes loading {
+            0% {
+                background-position: 200% 0;
+            }
+            100% {
+                background-position: -200% 0;
+            }
+        }
+    </style>
+</head>
+
+<body class="bg-gray-100 min-h-screen">
+    <!-- Header -->
+    <header class="bg-white shadow-sm">
+        <div class="container mx-auto px-4 py-4">
+            <h1 class="text-2xl font-bold text-gray-900">Profile</h1>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <div class="container mx-auto px-4 py-6">
+        <!-- Profile Info -->
+        <div id="profileInfo" class="bg-white rounded-xl shadow-sm p-6 mb-6">
+            <div class="flex items-center space-x-4">
+                <div class="relative">
+                    <div id="profileImageSkeleton" class="w-20 h-20 rounded-full skeleton"></div>
+                    <img id="profileImage" src="" alt="Profile" class="w-20 h-20 rounded-full object-cover hidden">
+                    <span class="absolute bottom-0 right-0 bg-green-500 p-1 rounded-full">
+                        <i class="fas fa-check text-white text-xs"></i>
+                    </span>
+                </div>
+                <div>
+                    <div id="nameSkeleton" class="h-7 w-40 skeleton mb-2"></div>
+                    <h2 id="userName" class="text-xl font-semibold hidden"></h2>
+                    <div id="statsSkeleton" class="h-5 w-32 skeleton"></div>
+                    <div id="userStats" class="flex items-center text-sm text-gray-600 mt-1 hidden">
+                        <i class="fas fa-graduation-cap mr-1"></i>
+                        <span id="userDepartment"></span>
+                        <span class="mx-2">•</span>
+                        <span id="userYear"></span>
+                    </div>
+                    <button id="editProfileBtn" class="mt-2 text-sm text-green-600 hover:text-green-700" onclick="window.location.href='edit-profile.html'">
+                        <i class="fas fa-edit mr-1"></i>Edit Profile
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Vehicle Information -->
+        <div class="bg-white rounded-xl shadow-sm p-6 mb-6">
+            <h3 class="text-lg font-semibold mb-4">Vehicle Information</h3>
+            <div id="vehicleInfo" class="space-y-4">
+                <div id="noVehicleMessage" class="text-center py-4 text-gray-500">
+                    <i class="fas fa-car text-gray-400 text-3xl mb-2"></i>
+                    <p>No vehicle information added yet</p>
+                </div>
+                <button id="addVehicleBtn" class="w-full py-2 border border-dashed border-gray-300 rounded-lg text-gray-600 hover:bg-gray-50">
+                    <i class="fas fa-plus mr-2"></i>Add Vehicle
+                </button>
+            </div>
+        </div>
+
+        <!-- Verification & Safety -->
+        <div class="bg-white rounded-xl shadow-sm p-6 mb-6">
+            <h3 class="text-lg font-semibold mb-4">Verification & Safety</h3>
+            <div class="space-y-4">
+                <div class="flex items-center justify-between">
+                    <div class="flex items-center">
+                        <i class="fas fa-phone text-green-600 w-8"></i>
+                        <div>
+                            <p class="font-medium">Phone Number</p>
+                            <p id="userPhone" class="text-sm text-gray-600">Loading...</p>
+                        </div>
+                    </div>
+                    <span class="text-green-600"><i class="fas fa-check-circle"></i></span>
+                </div>
+                <div class="flex items-center justify-between">
+                    <div class="flex items-center">
+                        <i class="fas fa-envelope text-green-600 w-8"></i>
+                        <div>
+                            <p class="font-medium">Email</p>
+                            <p id="userEmail" class="text-sm text-gray-600">Loading...</p>
+                        </div>
+                    </div>
+                    <span class="text-green-600"><i class="fas fa-check-circle"></i></span>
+                </div>
+                <div class="flex items-center justify-between">
+                    <div class="flex items-center">
+                        <i class="fas fa-id-card text-yellow-600 w-8"></i>
+                        <div>
+                            <p class="font-medium">Government ID</p>
+                            <p class="text-sm text-gray-600">Add your ID for verification</p>
+                        </div>
+                    </div>
+                    <button class="text-sm text-green-600 hover:text-green-700">Add</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Bio Section -->
+        <div class="bg-white rounded-xl shadow-sm p-6 mb-6">
+            <h3 class="text-lg font-semibold mb-4">About Me</h3>
+            <div id="bioContainer" class="text-gray-600">
+                <p id="userBio">Loading...</p>
+                <p id="noBioMessage" class="text-center py-2 text-gray-500 hidden">
+                    <i class="fas fa-info-circle mr-1"></i>
+                    No bio added yet
+                </p>
+            </div>
+        </div>
+
+        <!-- Preferences -->
+        <div class="bg-white rounded-xl shadow-sm p-6 mb-6">
+            <h3 class="text-lg font-semibold mb-4">Preferences</h3>
+            <div class="space-y-4">
+                <div class="flex items-center justify-between">
+                    <div class="flex items-center space-x-3">
+                        <i class="fas fa-venus-mars text-gray-600"></i>
+                        <span id="genderPreferenceText">Same gender co-passengers only</span>
+                    </div>
+                    <label class="relative inline-flex items-center cursor-pointer">
+                        <input type="checkbox" id="genderPreference" class="sr-only peer">
+                        <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-green-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-green-600"></div>
+                    </label>
+                </div>
+                <div class="flex items-center justify-between">
+                    <div class="flex items-center space-x-3">
+                        <i class="fas fa-bell text-gray-600"></i>
+                        <span>Push Notifications</span>
+                    </div>
+                    <label class="relative inline-flex items-center cursor-pointer">
+                        <input type="checkbox" id="notificationsPreference" checked class="sr-only peer">
+                        <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-green-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-green-600"></div>
+                    </label>
+                </div>
+            </div>
+        </div>
+
+        <!-- Action Buttons -->
+        <div class="space-y-4">
+            <button class="w-full py-3 bg-gray-100 text-gray-700 rounded-lg font-medium hover:bg-gray-200">
+                <i class="fas fa-question-circle mr-2"></i>Get Help
+            </button>
+            <button id="logoutBtn" class="w-full py-3 bg-red-50 text-red-600 rounded-lg font-medium hover:bg-red-100">
+                <i class="fas fa-sign-out-alt mr-2"></i>Log Out
+            </button>
+        </div>
+    </div>
+
+    <!-- Bottom Navigation -->
+    <nav class="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200">
+        <div class="flex justify-around items-center h-16">
+            <a href="Untitled-5.html" class="bottom-nav-item flex flex-col items-center text-sm text-gray-600">
+                <i class="fas fa-home text-xl mb-1"></i>
+                <span>Home</span>
+            </a>
+            <a href="Untitled-1.html" class="bottom-nav-item flex flex-col items-center text-sm text-gray-600">
+                <i class="fas fa-search text-xl mb-1"></i>
+                <span>Find</span>
+            </a>
+            <a href="Untitled-2.html" class="bottom-nav-item flex flex-col items-center text-sm text-gray-600">
+                <i class="fas fa-car text-xl mb-1"></i>
+                <span>Offer</span>
+            </a>
+            <a href="Untitled-9.html" class="bottom-nav-item flex flex-col items-center text-sm text-gray-600">
+                
+                <span>My Rides</span>
+            </a>
+            <a href="Untitled-4.html" class="bottom-nav-item active flex flex-col items-center text-sm">
+                <i class="fas fa-user text-xl mb-1"></i>
+                <span>Profile</span>
+            </a>
+        </div>
+    </nav>
+
+    <!-- Firebase SDK -->
+    <script type="module">
+        // Import Firebase functions and UserService
+        import { 
+            getCurrentUser, 
+            getUserProfile,
+            logoutUser
+        } from './firebase.js';
+        import { UserService } from './user-service.js';
+
+        // DOM Elements
+        const profileImage = document.getElementById('profileImage');
+        const profileImageSkeleton = document.getElementById('profileImageSkeleton');
+        const userName = document.getElementById('userName');
+        const nameSkeleton = document.getElementById('nameSkeleton');
+        const userStats = document.getElementById('userStats');
+        const statsSkeleton = document.getElementById('statsSkeleton');
+        const userDepartment = document.getElementById('userDepartment');
+        const userYear = document.getElementById('userYear');
+        const userPhone = document.getElementById('userPhone');
+        const userEmail = document.getElementById('userEmail');
+        const userBio = document.getElementById('userBio');
+        const noBioMessage = document.getElementById('noBioMessage');
+        const editProfileBtn = document.getElementById('editProfileBtn');
+        const logoutBtn = document.getElementById('logoutBtn');
+        const genderPreference = document.getElementById('genderPreference');
+        const genderPreferenceText = document.getElementById('genderPreferenceText');
+        const notificationsPreference = document.getElementById('notificationsPreference');
+
+        // Department mapping
+        const departmentNames = {
+            'cse': 'Computer Science',
+            'ece': 'Electronics & Comm.',
+            'me': 'Mechanical Engg.',
+            'ce': 'Civil Engineering',
+            'bt': 'Biotechnology',
+            'bba': 'Business Admin.',
+            'law': 'School of Law',
+            'other': 'Other Department'
+        };
+
+        // Year mapping
+        const yearNames = {
+            '1': '1st Year',
+            '2': '2nd Year',
+            '3': '3rd Year',
+            '4': '4th Year',
+            '5': '5th Year'
+        };
+
+        // Initialize
+        window.addEventListener('DOMContentLoaded', async function() {
+            try {
+                // Check if user is logged in
+                const user = await getCurrentUser();
+                if (!user) {
+                    // User is not logged in, redirect to login page
+                    window.location.href = 'login.html';
+                    return;
+                }
+
+                // Get user profile
+                const profile = await getUserProfile(user.uid);
+                if (!profile || !(profile.profileComplete || profile.isProfileComplete)) {
+                    // Profile not complete, redirect to profile completion page
+                    window.location.href = 'complete-profile.html';
+                    return;
+                }
+
+                // Update profile information
+                updateProfileUI(profile, user);
+
+                // Set up event listeners
+                setupEventListeners(user);
+
+            } catch (error) {
+                console.error('Error loading profile:', error);
+                alert('There was an error loading your profile. Please try again later.');
+            }
+        });
+
+        // Update profile UI with user data
+        function updateProfileUI(profile, user) {
+            // Save user data using UserService
+            UserService.saveUserData({
+                ...profile,
+                uid: user.uid
+            });
+
+            // Update name
+            userName.textContent = profile.fullName || 'User';
+            userName.classList.remove('hidden');
+            nameSkeleton.classList.add('hidden');
+
+            // Update profile image
+            if (profile.profilePicture) {
+                profileImage.src = profile.profilePicture;
+                profileImage.classList.remove('hidden');
+                profileImageSkeleton.classList.add('hidden');
+            } else {
+                // Use default image or first letter of name
+                const defaultImage = `https://ui-avatars.com/api/?name=${encodeURIComponent(profile.fullName)}&background=10B981&color=fff&size=200`;
+                profileImage.src = defaultImage;
+                profileImage.classList.remove('hidden');
+                profileImageSkeleton.classList.add('hidden');
+            }
+
+            // Update department and year
+            if (profile.department && profile.yearOfStudy) {
+                const deptName = departmentNames[profile.department] || profile.department;
+                const yearName = yearNames[profile.yearOfStudy] || `Year ${profile.yearOfStudy}`;
+                
+                userDepartment.textContent = deptName;
+                userYear.textContent = yearName;
+                userStats.classList.remove('hidden');
+                statsSkeleton.classList.add('hidden');
+            } else {
+                userStats.classList.add('hidden');
+                statsSkeleton.classList.add('hidden');
+            }
+
+            // Update contact info
+            userPhone.textContent = profile.phoneNumber ? `+91 ${profile.phoneNumber}` : 'Not provided';
+            userEmail.textContent = profile.email || user.email || 'Not provided';
+
+            // Update bio
+            if (profile.bio && profile.bio.trim()) {
+                userBio.textContent = profile.bio;
+                noBioMessage.classList.add('hidden');
+            } else {
+                userBio.classList.add('hidden');
+                noBioMessage.classList.remove('hidden');
+            }
+
+            // Update preferences based on gender
+            if (profile.gender === 'female') {
+                genderPreferenceText.textContent = 'Female co-passengers only';
+            } else if (profile.gender === 'male') {
+                genderPreferenceText.textContent = 'Male co-passengers only';
+            } else {
+                genderPreferenceText.textContent = 'Same gender co-passengers only';
+            }
+
+            // Set preference toggles (these would normally come from user preferences in the database)
+            // For now, we'll just set them to default values
+            genderPreference.checked = false;
+            notificationsPreference.checked = true;
+        }
+
+        // Set up event listeners
+        function setupEventListeners(user) {
+            // Edit profile button
+            editProfileBtn.addEventListener('click', function(e) {
+                e.preventDefault(); // Prevent any default behavior
+                window.location.href = 'edit-profile.html';
+            });
+
+            // Logout button
+            logoutBtn.addEventListener('click', async function() {
+                if (confirm('Are you sure you want to log out?')) {
+                    try {
+                        await logoutUser();
+                        UserService.clearUserData(); // Clear user data on logout
+                        window.location.href = 'login.html';
+                    } catch (error) {
+                        console.error('Logout error:', error);
+                        alert('There was an error logging out. Please try again.');
+                    }
+                }
+            });
+
+            // Toggle switches functionality
+            document.querySelectorAll('input[type="checkbox"]').forEach(checkbox => {
+                checkbox.addEventListener('change', function() {
+                    // In a real app, you would save these preferences to the database
+                    console.log(`${this.parentElement.previousElementSibling.textContent.trim()} is now ${this.checked ? 'enabled' : 'disabled'}`);
+                });
+            });
+        }
+    </script>
+</body>
+
+</html>
