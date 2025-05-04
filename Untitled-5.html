@@ -893,10 +893,6 @@ See the firebase-rules-guide.txt file for detailed rules configuration.`);
                                     <img src="${driverImage}" alt="Driver" class="w-8 h-8 rounded-full object-cover border-2 border-primary-light">
                                     <div class="ml-2">
                                         <p class="text-sm font-medium">${driverName}</p>
-                                        <div class="flex items-center">
-                                            <i class="fas fa-star text-yellow-400 text-xs"></i>
-                                            <span class="text-xs text-gray-600 ml-1">4.8</span>
-                                        </div>
                                     </div>
                                 </div>
                                 <button class="px-3 py-1.5 bg-primary text-white text-sm rounded-lg hover:bg-primary-dark transition duration-200" onclick="event.stopPropagation(); sessionStorage.setItem('selectedRideId', '${ride.id}'); window.location.href = 'ride-details.html';">
