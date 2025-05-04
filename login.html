@@ -204,9 +204,9 @@
                     </div>
 
                     <div class="flex items-center">
-                        <input type="checkbox" id="termsAgree" class="h-4 w-4 text-green-600 focus:ring-green-500 border-gray-300 rounded" required>
+                        <input type="checkbox" id="termsAgree" class="h-4 w-4 text-green-600 focus:ring-green-500 border-gray-300 rounded">
                         <label for="termsAgree" class="ml-2 block text-sm">
-                            I agree to the <a href="#" class="text-green-600 hover:text-green-500">Terms of Service</a> and <a href="#" class="text-green-600 hover:text-green-500">Privacy Policy</a>
+                            I agree to the <button type="button" id="openTermsBtn" class="text-green-600 hover:text-green-500 underline">Terms of Service</button>
                         </label>
                     </div>
 
@@ -218,6 +218,80 @@
 
                     <p id="signupError" class="error-message text-center"></p>
                 </form>
+            </div>
+        </div>
+
+        <!-- Terms and Conditions Modal -->
+        <div id="termsModal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50">
+            <div class="bg-white rounded-xl max-w-2xl mx-4 p-6 max-h-[80vh] overflow-y-auto">
+                <h2 class="text-2xl font-bold mb-4">TERMS AND CONDITIONS RAAHI:</h2>
+                
+                <div class="space-y-4 text-gray-700">
+                    <div>
+                        <h3 class="text-lg font-semibold mb-2">1. Nature of Service</h3>
+                        <p>Raahi is a student-led, non-commercial platform founded by Aayush Rathore and Mahek Advani, with Aditya Pandey as the CEO. The platform is created solely to facilitate voluntary carpooling among students of Bennett University. Raahi does not operate as a transport service provider, commercial aggregator, or travel agency. It merely acts as an online medium where users (students) may connect to coordinate ride-sharing arrangements.</p>
+                    </div>
+
+                    <div>
+                        <h3 class="text-lg font-semibold mb-2">2. No Agency or Liability</h3>
+                        <p>Raahi, including its founders, CEO, or any individual associated with the platform, is not a party to any agreement entered into between users. All ride-sharing arrangements are made directly and voluntarily between the Car Owner (Driver) and the Co-Traveller (Passenger).</p>
+                        <p class="mt-2">Accordingly:</p>
+                        <ul class="list-disc ml-6 mt-2">
+                            <li>Raahi bears no responsibility or liability for the conduct, punctuality, driving skill, vehicle condition, or behavior of any user.</li>
+                            <li>In case of any mishap, accident, injury, damage, delay, or dispute, Raahi and its team shall not be held liable, whether civil, criminal, financial, or otherwise.</li>
+                        </ul>
+                    </div>
+
+                    <div>
+                        <h3 class="text-lg font-semibold mb-2">3. No Insurance Obligation</h3>
+                        <p>Raahi does not provide or ensure any form of insurance for users or vehicles. It is the sole responsibility of the Car Owner to ensure compliance with legal and insurance requirements, including valid:</p>
+                        <ul class="list-disc ml-6 mt-2">
+                            <li>Driver's license</li>
+                            <li>Motor insurance</li>
+                            <li>Pollution Under Control (PUC) certificate</li>
+                            <li>Vehicle registration</li>
+                        </ul>
+                        <p class="mt-2">Raahi does not verify these documents and does not take any responsibility for their validity or existence.</p>
+                    </div>
+
+                    <div>
+                        <h3 class="text-lg font-semibold mb-2">4. Voluntary Participation & Assumption of Risk</h3>
+                        <p>By using the platform, users acknowledge and agree that:</p>
+                        <ul class="list-disc ml-6 mt-2">
+                            <li>They are participating voluntarily.</li>
+                            <li>They accept all risks associated with ride-sharing.</li>
+                            <li>They shall exercise personal judgment before entering into any carpool agreement.</li>
+                        </ul>
+                    </div>
+
+                    <div>
+                        <h3 class="text-lg font-semibold mb-2">5. Limitation of Liability</h3>
+                        <p>To the fullest extent permitted under applicable law:</p>
+                        <ul class="list-disc ml-6 mt-2">
+                            <li>Raahi, its founders, CEO, and affiliates shall not be liable for any direct, indirect, incidental, special, consequential, or punitive damages arising out of the use of the platform.</li>
+                            <li>Raahi's total aggregate liability, if any, shall be strictly limited to INR 1,000 (Indian Rupees One Thousand only).</li>
+                        </ul>
+                    </div>
+
+                    <div>
+                        <h3 class="text-lg font-semibold mb-2">6. Indemnity</h3>
+                        <p>Users agree to indemnify, defend, and hold harmless Raahi, its team, and affiliates from any claims, demands, liabilities, damages, or losses arising out of:</p>
+                        <ul class="list-disc ml-6 mt-2">
+                            <li>Violation of terms of use</li>
+                            <li>Any incident or dispute during a carpool trip</li>
+                            <li>Non-compliance with legal or safety standards by a user</li>
+                        </ul>
+                    </div>
+
+                    <div>
+                        <h3 class="text-lg font-semibold mb-2">7. Jurisdiction</h3>
+                        <p>These terms are governed by the laws of India. Any disputes arising from or in connection with the use of Raahi shall be subject to the exclusive jurisdiction of the courts in New Delhi.</p>
+                    </div>
+                </div>
+
+                <div class="mt-6 flex justify-end">
+                    <button id="closeTermsBtn" class="bg-green-600 text-white px-6 py-2 rounded-lg hover:bg-green-700">Close</button>
+                </div>
             </div>
         </div>
 
@@ -450,18 +524,35 @@
                     const isOtpValid = await verifyOTP(signupPhone.value, signupOtpInput.value);
                     if (!isOtpValid) {
                         showError('signupOtpError', 'Invalid OTP');
+                        signupSubmitBtn.disabled = false;
+                        signupSpinner.classList.add('hidden');
                         return;
                     }
 
-                    // Register user
-                    await registerUser(signupPhone.value, signupPassword.value);
+                    try {
+                        // Register user
+                        await registerUser(signupPhone.value, signupPassword.value);
 
-                    // Redirect to profile completion
-                    window.location.href = 'complete-profile.html';
+                        // Redirect to profile completion
+                        window.location.href = 'complete-profile.html';
+                    } catch (error) {
+                        if (error.code === 'auth/email-already-in-use') {
+                            showError('signupError', 'This phone number is already registered. Please sign in instead.');
+                        } else if (error.code === 'auth/invalid-email') {
+                            showError('signupError', 'Invalid phone number format.');
+                        } else if (error.code === 'auth/operation-not-allowed') {
+                            showError('signupError', 'Account creation is temporarily disabled. Please try again later.');
+                        } else if (error.code === 'auth/weak-password') {
+                            showError('signupPasswordError', 'Password is too weak. Please use a stronger password.');
+                        } else {
+                            showError('signupError', 'Failed to create account. Please try again.');
+                        }
+                        signupSubmitBtn.disabled = false;
+                        signupSpinner.classList.add('hidden');
+                    }
 
                 } catch (error) {
                     showError('signupError', error.message);
-                } finally {
                     signupSubmitBtn.disabled = false;
                     signupSpinner.classList.add('hidden');
                 }
@@ -535,6 +626,32 @@
             // Clean up on page unload
             window.addEventListener('unload', () => {
                 clearInterval(otpTimerInterval);
+            });
+
+            // Terms and conditions modal handlers
+            const termsModal = document.getElementById('termsModal');
+            const openTermsBtn = document.getElementById('openTermsBtn');
+            const closeTermsBtn = document.getElementById('closeTermsBtn');
+
+            openTermsBtn.addEventListener('click', (e) => {
+                e.preventDefault();
+                termsModal.classList.remove('hidden');
+                termsModal.classList.add('flex');
+                document.body.style.overflow = 'hidden';
+            });
+
+            closeTermsBtn.addEventListener('click', () => {
+                termsModal.classList.remove('flex');
+                termsModal.classList.add('hidden');
+                document.body.style.overflow = 'auto';
+            });
+
+            termsModal.addEventListener('click', (e) => {
+                if (e.target === termsModal) {
+                    termsModal.classList.remove('flex');
+                    termsModal.classList.add('hidden');
+                    document.body.style.overflow = 'auto';
+                }
             });
         });
     </script>
