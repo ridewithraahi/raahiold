@@ -375,8 +375,21 @@
                 // Process rides
                 const now = new Date();
                 
+                // Delete completed rides
+                const completedRides = userRides.filter(ride => new Date(ride.date) < now);
+                for (const ride of completedRides) {
+                    try {
+                        await deleteRide(ride.id);
+                    } catch (error) {
+                        console.error('Error deleting completed ride:', error);
+                    }
+                }
+                
+                // Filter out completed rides from userRides
+                const activeRides = userRides.filter(ride => new Date(ride.date) >= now);
+                
                 // Separate upcoming and past rides
-                const upcomingUserRides = userRides.filter(ride => new Date(ride.date) > now);
+                const upcomingUserRides = activeRides.filter(ride => new Date(ride.date) > now);
                 const pastUserRides = userRides.filter(ride => new Date(ride.date) <= now);
                 
                 // Separate upcoming and past bookings
@@ -468,10 +481,18 @@
             // Format the date and time
             const rideDate = new Date(ride.date);
             const formattedDate = rideDate.toLocaleDateString('en-IN', {
-                    day: 'numeric',
+                day: 'numeric',
                 month: 'short',
-                    year: 'numeric'
-                });
+                year: 'numeric'
+            });
+            
+            // Format time in 12-hour format
+            const hours = rideDate.getHours();
+            const minutes = rideDate.getMinutes();
+            const ampm = hours >= 12 ? 'PM' : 'AM';
+            const formattedHours = hours % 12 || 12;
+            const formattedMinutes = minutes.toString().padStart(2, '0');
+            const formattedTime = `${formattedHours}:${formattedMinutes} ${ampm}`;
             
             const today = new Date();
             today.setHours(0, 0, 0, 0);
@@ -486,19 +507,19 @@
                 statusBadge = '<span class="bg-gray-100 text-gray-800 text-xs font-medium px-2.5 py-0.5 rounded">Completed</span>';
             }
             
-            let timeFormatted = ride.time || '';
-            if (timeFormatted) {
-                try {
-                    // Convert to Indian time format (12-hour)
-                    const [hours, minutes] = timeFormatted.split(':');
-                    const hour = parseInt(hours);
-                    const ampm = hour >= 12 ? 'PM' : 'AM';
-                    const hour12 = hour % 12 || 12;
-                    timeFormatted = `${hour12}:${minutes} ${ampm}`;
-                } catch (error) {
-                    console.error('Error formatting time:', error);
-                    timeFormatted = ride.time; // Use original time if formatting fails
-                }
+            // Vehicle type display
+            let vehicleTypeDisplay = '';
+            let vehicleButton = '';
+            if (ride.vehicleType === 'uber') {
+                vehicleTypeDisplay = `<span class="inline-flex items-center px-2 py-1 bg-gray-100 text-green-700 rounded text-xs font-semibold mr-2"><i class='fab fa-uber mr-1'></i>Uber</span>`;
+                vehicleButton = `<a href="https://m.uber.com/" target="_blank" class="ml-2 px-3 py-1 text-xs bg-black text-white rounded hover:bg-gray-800 transition"><i class='fab fa-uber mr-1'></i>Open in Uber</a>`;
+            } else if (ride.vehicleType === 'ola') {
+                vehicleTypeDisplay = `<span class="inline-flex items-center px-2 py-1 bg-gray-100 text-yellow-700 rounded text-xs font-semibold mr-2"><i class='fab fa-osi mr-1'></i>Ola</span>`;
+                vehicleButton = `<a href="https://www.olacabs.com/" target="_blank" class="ml-2 px-3 py-1 text-xs bg-yellow-500 text-white rounded hover:bg-yellow-600 transition"><i class='fab fa-osi mr-1'></i>Open in Ola</a>`;
+            } else if (ride.vehicleType === 'other') {
+                vehicleTypeDisplay = `<span class="inline-flex items-center px-2 py-1 bg-gray-100 text-gray-700 rounded text-xs font-semibold mr-2"><i class='fas fa-car mr-1'></i>Other</span>`;
+            } else if (ride.vehicleType === 'custom' && ride.vehicle) {
+                vehicleTypeDisplay = `<span class="inline-flex items-center px-2 py-1 bg-gray-100 text-blue-700 rounded text-xs font-semibold mr-2"><i class='fas fa-car mr-1'></i>${ride.vehicle.model} - ${ride.vehicle.color} (${ride.vehicle.licensePlate})</span>`;
             }
             
             // Create card
@@ -513,7 +534,8 @@
                 <div class="flex items-center justify-between mb-4">
                     <div class="flex items-center space-x-2">
                             ${statusBadge}
-                            <span class="text-sm text-gray-600">${formattedDate}, ${timeFormatted}</span>
+                            <span class="text-sm text-gray-600">${formattedDate}</span>
+                            <span class="text-sm font-medium text-gray-900">${formattedTime}</span>
                         </div>
                         <span class="font-medium">₹${ride.price}</span>
                 </div>
@@ -533,6 +555,7 @@
                                 <p class="text-sm text-gray-600">Drop: ${ride.destination}</p>
                         </div>
                     </div>
+                    <div class="flex items-center mt-2">${vehicleTypeDisplay} ${vehicleButton}</div>
                     </div>
 
                     ${ride.bookings && ride.bookings.length > 0 ? `
@@ -637,11 +660,7 @@
                                 <button class="cancel-booking-btn px-3 py-1 text-sm text-red-600 border border-red-200 rounded-lg hover:bg-red-50">
                                     Cancel
                                 </button>
-                            ` : `
-                                <button class="rate-ride-btn px-3 py-1 text-sm border border-gray-300 rounded-lg hover:bg-gray-50">
-                                    Rate Ride
-                                </button>
-                            `}
+                            ` : ``}
                         </div>
                     </div>
                 `;
@@ -1069,6 +1088,26 @@
             // You can use a toast, modal, or any UI element
             alert(message); // For demo, use alert. Replace with your own UI!
         }
+
+        // Add periodic check for completed rides
+        setInterval(async () => {
+            try {
+                const userRides = await getUserRides(currentUser.uid);
+                const now = new Date();
+                
+                // Delete completed rides
+                const completedRides = userRides.filter(ride => new Date(ride.date) < now);
+                for (const ride of completedRides) {
+                    try {
+                        await deleteRide(ride.id);
+                    } catch (error) {
+                        console.error('Error deleting completed ride:', error);
+                    }
+                }
+            } catch (error) {
+                console.error('Error in periodic ride cleanup:', error);
+            }
+        }, 3600000); // Check every hour
     </script>
 
     <script>
@@ -1096,4 +1135,4 @@
     </script>
 </body>
 
-</html
+</html>
