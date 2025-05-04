@@ -10,6 +10,7 @@ import {
 } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
 import { getDatabase, ref, set, get, push, update, remove, onValue, query, orderByChild, equalTo } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-database.js";
 import { getStorage, ref as storageRef, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-storage.js";
+import { formatPhoneNumber } from './twilio.js';
 
 // Your web app's Firebase configuration
 const firebaseConfig = {
@@ -33,8 +34,9 @@ const analytics = getAnalytics(app);
 // Authentication functions
 export const loginUser = async (phone, password) => {
     try {
-        // Convert phone to email format for Firebase auth
-        const email = `${phone}@raahi.com`;
+        // Format phone number and convert to email format for Firebase auth
+        const formattedPhone = formatPhoneNumber(phone);
+        const email = `${formattedPhone.replace('+', '')}@raahi.com`;
         const userCredential = await signInWithEmailAndPassword(auth, email, password);
         return userCredential.user;
     } catch (error) {
@@ -45,8 +47,9 @@ export const loginUser = async (phone, password) => {
 
 export const registerUser = async (phone, password) => {
     try {
-        // Convert phone to email format for Firebase auth
-        const email = `${phone}@raahi.com`;
+        // Format phone number and convert to email format for Firebase auth
+        const formattedPhone = formatPhoneNumber(phone);
+        const email = `${formattedPhone.replace('+', '')}@raahi.com`;
         const userCredential = await createUserWithEmailAndPassword(auth, email, password);
         return userCredential.user;
     } catch (error) {
