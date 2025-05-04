@@ -8,6 +8,9 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <script src="https://apis.mapmyindia.com/advancedmaps/v1/387047231934f02d7561497377c046d3/map_load?v=1.3"></script>
+    <script src="https://apis.mapmyindia.com/advancedmaps/v1/387047231934f02d7561497377c046d3/map_sdk_plugins/places_plugin.js"></script>
+    <script src="https://apis.mapmyindia.com/advancedmaps/v1/387047231934f02d7561497377c046d3/map_sdk_plugins/routing_plugin.js"></script>
     <style>
         body {
             font-family: 'Inter', sans-serif;
@@ -39,6 +42,55 @@
             0% { transform: rotate(0deg); }
             100% { transform: rotate(360deg); }
         }
+        
+        .route-info-card {
+            display: flex;
+            gap: 2rem;
+            align-items: center;
+            background: #e6f9f0;
+            color: #059669;
+            border-radius: 8px;
+            padding: 0.75rem 1.5rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+            font-size: 1.1rem;
+        }
+        
+        .route-info-card i {
+            margin-right: 0.5rem;
+        }
+        
+        #directionsList {
+            background: #f8fafc;
+            border-radius: 8px;
+            padding: 1rem;
+            margin-top: 1rem;
+            font-size: 1rem;
+            color: #333;
+        }
+        
+        #clearRouteBtn {
+            background: #fff;
+            color: #059669;
+            border: 1px solid #059669;
+            border-radius: 6px;
+            padding: 0.5rem 1.2rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+            cursor: pointer;
+            transition: background 0.2s, color 0.2s;
+        }
+        
+        #clearRouteBtn:hover {
+            background: #059669;
+            color: #fff;
+        }
+        
+        @media (max-width: 600px) {
+            .route-info-card { flex-direction: column; gap: 0.5rem; font-size: 1rem; }
+            #map { height: 200px !important; }
+            #directionsList { font-size: 0.95rem; }
+        }
     </style>
 </head>
 
@@ -63,7 +115,7 @@
                         <label class="block text-sm font-medium text-gray-700 mb-2">Starting Point</label>
                         <div class="relative">
                             <i class="fas fa-circle text-green-500 absolute left-3 top-3 text-xs"></i>
-                            <input type="text" id="startingPoint" placeholder="Where are you starting from?" required class="pl-10 block w-full rounded-lg border-gray-300 border p-2.5 focus:ring-2 focus:ring-green-500 focus:border-green-500">
+                            <input type="text" id="startingPoint" list="placesList" autocomplete="off" placeholder="Where are you starting from?" required class="pl-10 block w-full rounded-lg border-gray-300 border p-2.5 focus:ring-2 focus:ring-green-500 focus:border-green-500">
                         </div>
                         <p id="startingPointError" class="error-message">Please enter a starting point</p>
                     </div>
@@ -72,7 +124,7 @@
                         <label class="block text-sm font-medium text-gray-700 mb-2">Destination</label>
                         <div class="relative">
                             <i class="fas fa-map-marker-alt text-red-500 absolute left-3 top-3"></i>
-                            <input type="text" id="destination" placeholder="Where are you going?" required class="pl-10 block w-full rounded-lg border-gray-300 border p-2.5 focus:ring-2 focus:ring-green-500 focus:border-green-500">
+                            <input type="text" id="destination" list="placesList" autocomplete="off" placeholder="Where are you going?" required class="pl-10 block w-full rounded-lg border-gray-300 border p-2.5 focus:ring-2 focus:ring-green-500 focus:border-green-500">
                         </div>
                         <p id="destinationError" class="error-message">Please enter a destination</p>
                     </div>
@@ -98,6 +150,11 @@
                 </div>
             </div>
 
+            <div id="routeInfo" class="route-info-card"></div>
+            <button id="clearRouteBtn" style="display:none;">Clear Route</button>
+            <div id="map" style="height: 300px; width: 100%; margin-top: 1rem; border-radius: 8px;"></div>
+            <div id="directionsList"></div>
+
             <!-- Vehicle Section -->
             <div class="bg-white rounded-xl shadow-sm p-6">
                 <h2 class="text-lg font-semibold mb-4">Vehicle Details</h2>
@@ -106,10 +163,12 @@
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-2">Select Vehicle</label>
                         <select id="vehicleSelect" required class="block w-full rounded-lg border-gray-300 border p-2.5 focus:ring-2 focus:ring-green-500 focus:border-green-500">
-                            <option value="">Select a vehicle</option>
-                            <option value="honda-city">Honda City - White (KA01AB1234)</option>
-                            <option value="add-new">+ Add New Vehicle</option>
-                        </select>
+                                <option value="">Select a vehicle</option>
+                                <option value="uber">Uber</option>
+                                <option value="ola">Ola</option>
+                                <option value="other">Other</option>
+                                <option value="add">+ Add New Vehicle</option>
+                              </select>
                         <p id="vehicleError" class="error-message">Please select a vehicle</p>
                     </div>
 
@@ -378,10 +437,11 @@
             
             // Check vehicle selection
             let vehicleData = null;
+            let vehicleType = null;
             if (vehicleSelect.value === '') {
                 vehicleError.style.display = 'block';
                 hasError = true;
-            } else if (vehicleSelect.value === 'add-new') {
+            } else if (vehicleSelect.value === 'add') {
                 // Validate new vehicle fields
                 if (vehicleModel.value.trim() === '' || vehicleColor.value.trim() === '' || licensePlate.value.trim() === '') {
                     vehicleError.textContent = 'Please complete all vehicle details';
@@ -393,14 +453,11 @@
                         color: vehicleColor.value.trim(),
                         licensePlate: licensePlate.value.trim()
                     };
+                    vehicleType = 'custom';
                 }
             } else {
-                // Use selected vehicle
-                vehicleData = {
-                    model: 'Honda City',
-                    color: 'White',
-                    licensePlate: 'KA01AB1234'
-                };
+                // Use selected vehicle type (uber/ola/other)
+                vehicleType = vehicleSelect.value;
             }
             
             if (availableSeats.value === '') {
@@ -433,7 +490,6 @@
                     startingPoint: startingPoint.value.trim(),
                     destination: destination.value.trim(),
                     date: rideDateTime.toISOString(),
-                    vehicle: vehicleData,
                     availableSeats: parseInt(availableSeats.value),
                     price: parseInt(pricePerSeat.value),
                     notes: rideNotes.value.trim(),
@@ -441,6 +497,12 @@
                     status: 'active',
                     passengers: []
                 };
+                if (vehicleType === 'custom' && vehicleData) {
+                    rideData.vehicle = vehicleData;
+                    rideData.vehicleType = 'custom';
+                } else if (vehicleType) {
+                    rideData.vehicleType = vehicleType;
+                }
                 
                 // Create ride in Firebase
                 await createRide(rideData);
@@ -459,6 +521,199 @@
             }
         });
     </script>
+
+    <script>
+    function initMapplsMap() {
+        var map = new MapmyIndia.Map("map", {
+            center: [20.5937, 78.9629],
+            zoom: 5
+        });
+
+        window.startMarker = null;
+        window.destMarker = null;
+        window.routeLine = null;
+
+        // Custom marker icons with labels
+        function createLabeledMarker(lat, lng, label, color) {
+            return L.marker([lat, lng], {
+                icon: L.divIcon({
+                    className: 'custom-marker',
+                    html: `<div style="background:${color};color:#fff;border-radius:50%;width:32px;height:32px;display:flex;align-items:center;justify-content:center;font-weight:bold;font-size:1.1rem;border:2px solid #fff;box-shadow:0 2px 6px #0002;">${label}</div>`,
+                    iconSize: [32, 32],
+                    iconAnchor: [16, 32]
+                })
+            });
+        }
+
+        // Starting Point Widget
+        if (window.MapmyIndiaPlaceWidget) {
+            new window.MapmyIndiaPlaceWidget({
+                input: 'startingPoint',
+                map: map,
+                callback: function(data) {
+                    if (data && data.lat && data.lng) {
+                        if (window.startMarker) map.removeLayer(window.startMarker);
+                        window.startMarker = createLabeledMarker(data.lat, data.lng, 'A', '#059669').addTo(map);
+                        map.setView([data.lat, data.lng], 15);
+                        fitBothMarkers(map);
+                    }
+                }
+            });
+        }
+
+        // Destination Widget
+        if (window.MapmyIndiaPlaceWidget) {
+            new window.MapmyIndiaPlaceWidget({
+                input: 'destination',
+                map: map,
+                callback: function(data) {
+                    if (data && data.lat && data.lng) {
+                        if (window.destMarker) map.removeLayer(window.destMarker);
+                        window.destMarker = createLabeledMarker(data.lat, data.lng, 'B', '#e11d48').addTo(map);
+                        map.setView([data.lat, data.lng], 15);
+                        fitBothMarkers(map);
+                    }
+                }
+            });
+        }
+
+        // Extra: Listen for manual input and try to trigger route if both markers exist
+        const startingPointInput = document.getElementById('startingPoint');
+        const destinationInput = document.getElementById('destination');
+        function tryDrawRouteOnInput() {
+            // Only draw if both markers exist
+            if (window.startMarker && window.destMarker) {
+                fitBothMarkers(map);
+            }
+        }
+        startingPointInput.addEventListener('change', tryDrawRouteOnInput);
+        destinationInput.addEventListener('change', tryDrawRouteOnInput);
+
+        // Clear Route Button
+        document.getElementById('clearRouteBtn').onclick = function() {
+            if (window.startMarker) { map.removeLayer(window.startMarker); window.startMarker = null; }
+            if (window.destMarker) { map.removeLayer(window.destMarker); window.destMarker = null; }
+            if (window.routeLine) { map.removeLayer(window.routeLine); window.routeLine = null; }
+            document.getElementById('routeInfo').innerHTML = '';
+            document.getElementById('directionsList').innerHTML = '';
+            this.style.display = 'none';
+            map.setView([20.5937, 78.9629], 5);
+        };
+    }
+
+    function fitBothMarkers(map) {
+        if (window.startMarker && window.destMarker) {
+            var start = window.startMarker.getLatLng();
+            var end = window.destMarker.getLatLng();
+            if (window.routeLine) map.removeLayer(window.routeLine);
+            MapmyIndia.routing({
+                map: map,
+                start: [start.lng, start.lat],
+                end: [end.lng, end.lat],
+                resource: 'route_eta',
+                profile: 'driving',
+                alternatives: false,
+                steps: true,
+                geometries: 'polyline',
+                overview: 'full',
+                fitbounds: true,
+                lineOptions: {color: 'blue', weight: 5}
+            }, function(data) {
+                window.routeLine = data.routeLine;
+                // Show distance and duration in a styled card with icons
+                const routeInfoDiv = document.getElementById('routeInfo');
+                const clearBtn = document.getElementById('clearRouteBtn');
+                if (data && data.routes && data.routes[0]) {
+                    const dist = data.routes[0].distance / 1000; // meters to km
+                    const dur = data.routes[0].duration / 60; // seconds to min
+                    routeInfoDiv.innerHTML = `<span><i class='fas fa-road'></i> ${dist.toFixed(2)} km</span> <span><i class='fas fa-clock'></i> ${dur.toFixed(0)} min</span>`;
+                    clearBtn.style.display = 'inline-block';
+                    // Show step-by-step directions
+                    const steps = data.routes[0].legs[0].steps;
+                    let directionsHtml = '<b>Directions:</b><ol style="margin-top:0.5rem;">';
+                    for (let step of steps) {
+                        directionsHtml += `<li>${step.maneuver.instruction}</li>`;
+                    }
+                    directionsHtml += '</ol>';
+                    document.getElementById('directionsList').innerHTML = directionsHtml;
+                } else {
+                    routeInfoDiv.innerHTML = '';
+                    clearBtn.style.display = 'none';
+                    document.getElementById('directionsList').innerHTML = '';
+                }
+            });
+        } else {
+            if (window.routeLine) { map.removeLayer(window.routeLine); window.routeLine = null; }
+            document.getElementById('routeInfo').innerHTML = '';
+            document.getElementById('directionsList').innerHTML = '';
+            document.getElementById('clearRouteBtn').style.display = 'none';
+        }
+    }
+
+    window.onload = function() {
+        if (typeof MapmyIndia !== 'undefined') {
+            initMapplsMap();
+        } else {
+            var interval = setInterval(function() {
+                if (typeof MapmyIndia !== 'undefined') {
+                    clearInterval(interval);
+                    initMapplsMap();
+                }
+            }, 100);
+        }
+    };
+    </script>
+
+    <script>
+    console.log(window.MapmyIndiaPlaceWidget);
+    </script>
+
+    <script>
+    // Replace YOUR_API_KEY with your actual key
+    fetch('https://atlas.mappls.com/api/places/search/json?query=delhi&region=INDIA&key=YOUR_API_KEY')
+      .then(res => res.json())
+      .then(data => console.log(data));
+    </script>
+
+    <datalist id="placesList">
+        <option value="Bennett University">
+        <option value="Alpha 2">
+        <option value="Delta Metro">
+        <option value="Grand Venice Mall">
+        <option value="MSX Mall">
+        <option value="Alpha 1">
+        <option value="Delta 1">
+        <option value="Delta 1 Metro">
+        <option value="New Delhi Railway Station (NDLS)">
+        <option value="Old Delhi Railway Station (DLI)">
+        <option value="Hazrat Nizamuddin Railway Station (NZM)">
+        <option value="Anand Vihar Terminal (ANVT)">
+        <option value="Delhi Sarai Rohilla Railway Station (DEE)">
+        <option value="Delhi Cantonment Railway Station (DEC)">
+        <option value="Shakur Basti Railway Station (SSB)">
+        <option value="Safdarjung Railway Station (DSJ)">
+        <option value="Indira Gandhi International Airport">
+        <option value="India Gate">
+        <option value="Red Fort (Lal Qila)">
+        <option value="Qutub Minar">
+        <option value="Lotus Temple">
+        <option value="Akshardham Temple">
+        <option value="Humayun's Tomb">
+        <option value="Jama Masjid">
+        <option value="Connaught Place (CP)">
+        <option value="Hauz Khas Village">
+        <option value="National Rail Museum">
+        <option value="Lodhi Gardens">
+        <option value="Dilli Haat">
+        <option value="Chandni Chowk">
+        <option value="Rashtrapati Bhavan">
+        <option value="Agrasen ki Baoli">
+        <option value="Jantar Mantar">
+        <option value="Raj Ghat">
+        <option value="ISKCON Temple">
+        <option value="Garden of Five Senses">
+        <option value="Purana Qila (Old Fort)">
+    </datalist>
 </body>
 
 </html>
