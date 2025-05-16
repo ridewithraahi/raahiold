@@ -1,21 +1,16 @@
-require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
-const twilio = require('twilio');
+const fetch = require('node-fetch');
 
 const app = express();
-const port = process.env.PORT || 3000;
+const port = process.env.PORT || 3001;
 
 // Middleware
 app.use(cors());
 app.use(express.json());
-app.use(express.static('.')); // Serve static files from current directory
 
-// Twilio setup
-const accountSid = process.env.TWILIO_ACCOUNT_SID;
-const authToken = process.env.TWILIO_AUTH_TOKEN;
-const twilioPhone = process.env.TWILIO_PHONE_NUMBER;
-const client = twilio(accountSid, authToken);
+// Fast2SMS configuration
+const FAST2SMS_API_KEY = 'LVe05dq8RbXOQ4KYzwkPEutfpBIg2ZTcCs7NDG9ji1rHlonSaWBMshIdTp128zt9EmZOGonJAlrK0xWy';
 
 // Store OTPs (in production, use a proper database)
 const otpStore = new Map();
@@ -27,10 +22,7 @@ function generateOTP() {
 
 // Validate phone number
 function validatePhone(phone) {
-    const cleaned = phone.replace(/\D/g, '');
-    if (cleaned.startsWith('91')) {
-        cleaned = cleaned.substring(2);
-    }
+    const cleaned = phone.replace(/\D/g, "");
     return /^[6-9]\d{9}$/.test(cleaned);
 }
 
@@ -52,17 +44,32 @@ app.post('/api/send-otp', async (req, res) => {
         // Store OTP with 5-minute expiry
         otpStore.set(phone, {
             code: otp,
-            expiresAt: Date.now() + 5 * 60 * 1000
+            expiresAt: Date.now() + 5 * 60 * 1000 // 5 minutes in milliseconds
         });
 
-        // Send SMS using Twilio
-        await client.messages.create({
-            body: `Your Raahi verification code is: ${otp}. Valid for 5 minutes.`,
-            to: phone,
-            from: twilioPhone
+        // Send OTP via Fast2SMS WhatsApp
+        const response = await fetch("https://www.fast2sms.com/dev/bulkV2", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                "Authorization": FAST2SMS_API_KEY
+            },
+            body: JSON.stringify({
+                route: "w",
+                message: `Your Raahi verification code is: ${otp}. Valid for 5 minutes.`,
+                numbers: phone.replace(/\D/g, ""),
+                channel: "whatsapp"
+            })
         });
 
-        res.json({ success: true, message: 'OTP sent successfully' });
+        const data = await response.json();
+        console.log("Fast2SMS Response:", data);
+        
+        if (data.return === true) {
+            res.json({ success: true, message: 'OTP sent successfully' });
+        } else {
+            throw new Error(data.message || 'Failed to send OTP');
+        }
 
     } catch (error) {
         console.error('Error sending OTP:', error);
@@ -80,39 +87,27 @@ app.post('/api/verify-otp', (req, res) => {
         const { phone, otp } = req.body;
 
         if (!phone || !otp) {
-            return res.status(400).json({ 
-                success: false, 
-                message: 'Phone number and OTP are required' 
-            });
+            return res.status(400).json({ success: false, message: 'Phone number and OTP are required' });
         }
 
         const storedData = otpStore.get(phone);
         
         if (!storedData) {
-            return res.status(400).json({ 
-                success: false, 
-                message: 'No OTP request found. Please request a new OTP.' 
-            });
+            return res.status(400).json({ success: false, message: 'No OTP found for this number' });
         }
 
         if (Date.now() > storedData.expiresAt) {
             otpStore.delete(phone);
-            return res.status(400).json({ 
-                success: false, 
-                message: 'OTP has expired. Please request a new one.' 
-            });
+            return res.status(400).json({ success: false, message: 'OTP has expired' });
         }
 
-        if (otp !== storedData.code) {
-            return res.status(400).json({ 
-                success: false, 
-                message: 'Invalid OTP. Please try again.' 
-            });
+        if (storedData.code !== otp) {
+            return res.status(400).json({ success: false, message: 'Invalid OTP' });
         }
 
-        // Clear OTP after successful verification
+        // Clear the OTP after successful verification
         otpStore.delete(phone);
-
+        
         res.json({ success: true, message: 'OTP verified successfully' });
 
     } catch (error) {
@@ -125,7 +120,6 @@ app.post('/api/verify-otp', (req, res) => {
     }
 });
 
-// Start server
 app.listen(port, () => {
-    console.log(`Server running at http://localhost:${port}`);
+    console.log(`Server is running on port ${port}`);
 }); 
