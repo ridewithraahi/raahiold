@@ -6,11 +6,12 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Welcome to Raahi</title>
     <script type="module" src="./firebase.js"></script>
-    <script type="module" src="./twilio.js"></script>
+    <script type="module" src="./fast2sms.js"></script>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <link rel="stylesheet" href="styles.css">
+    <meta name="fast2sms" content="PO2TWVQfaHTHZYoKmKb5tPvQulljB7lU">
     <style>
         .error-message {
             color: #dc2626;
@@ -352,7 +353,7 @@
     </script>
     <!-- Firebase SDK -->
     <script type="module">
-        import { sendOTP, verifyOTP, isOTPExpired, getOTPRemainingTime } from './twilio.js';
+        import { sendOTP, verifyOTP, isOTPExpired, getOTPRemainingTime } from './fast2sms.js';
         import { loginUser, registerUser } from './firebase.js';
 
         document.addEventListener('DOMContentLoaded', function() {
@@ -386,9 +387,12 @@
             let otpTimerInterval;
 
             // Phone number validation
-            function validatePhoneNumber(phone) {
-                const cleaned = phone.replace(/\D/g, '');
-                return /^[6-9]\d{9}$/.test(cleaned) || /^91[6-9]\d{9}$/.test(cleaned);
+            function validatePhone(phone) {
+                let cleaned = phone.replace(/\D/g, '');
+                if (cleaned.startsWith('91')) {
+                    cleaned = cleaned.substring(2);
+                }
+                return /^[6-9]\d{9}$/.test(cleaned);
             }
 
             // Show error message
@@ -412,7 +416,6 @@
             function startOtpTimer() {
                 clearInterval(otpTimerInterval);
                 updateOtpTimerDisplay();
-                
                 otpTimerInterval = setInterval(() => {
                     if (isOTPExpired()) {
                         clearInterval(otpTimerInterval);
@@ -435,7 +438,7 @@
             // Send OTP handler
             signupSendOtpBtn.addEventListener('click', async () => {
                 try {
-                    if (!validatePhoneNumber(signupPhone.value)) {
+                    if (!validatePhone(signupPhone.value)) {
                         showError('signupPhoneError', 'Please enter a valid Indian phone number');
                         return;
                     }
@@ -445,13 +448,12 @@
                     signupSendOtpBtn.innerHTML = '<span class="loading-spinner"></span>';
 
                     await sendOTP(signupPhone.value);
-
-                    signupOtpSection.classList.remove('hidden');
                     startOtpTimer();
                     signupPhone.disabled = true;
                     signupSendOtpBtn.textContent = 'OTP Sent';
 
                 } catch (error) {
+                    console.error('Error sending OTP:', error);
                     showError('signupPhoneError', error.message);
                     signupSendOtpBtn.disabled = false;
                     signupSendOtpBtn.textContent = 'Send OTP';
@@ -465,7 +467,11 @@
                     signupResendOtpBtn.textContent = 'Sending...';
                     hideError('signupOtpError');
 
-                    await sendOTP(signupPhone.value);
+                    await fetch('/api/send-otp', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ phone: signupPhone.value })
+                    });
 
                     startOtpTimer();
                     signupResendOtpBtn.classList.add('hidden');
@@ -485,7 +491,7 @@
 
                 try {
                     // Validate all fields
-                    if (!validatePhoneNumber(signupPhone.value)) {
+                    if (!validatePhone(signupPhone.value)) {
                         showError('signupPhoneError', 'Please enter a valid Indian phone number');
                         return;
                     }
@@ -563,7 +569,7 @@
                 e.preventDefault();
 
                 try {
-                    if (!validatePhoneNumber(loginPhone.value)) {
+                    if (!validatePhone(loginPhone.value)) {
                         showError('loginPhoneError', 'Please enter a valid phone number');
                         return;
                     }
