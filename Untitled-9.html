@@ -512,7 +512,7 @@
             let vehicleButton = '';
             if (ride.vehicleType === 'uber') {
                 vehicleTypeDisplay = `<span class="inline-flex items-center px-2 py-1 bg-gray-100 text-green-700 rounded text-xs font-semibold mr-2"><i class='fab fa-uber mr-1'></i>Uber</span>`;
-                vehicleButton = `<a href="https://m.uber.com/" target="_blank" class="ml-2 px-3 py-1 text-xs bg-black text-white rounded hover:bg-gray-800 transition"><i class='fab fa-uber mr-1'></i>Open in Uber</a>`;
+                vehicleButton = `<a href="#" class="ml-2 px-3 py-1 text-xs bg-black text-white rounded hover:bg-gray-800 transition uber-open-btn"><i class='fab fa-uber mr-1'></i>Open in Uber</a>`;
             } else if (ride.vehicleType === 'ola') {
                 vehicleTypeDisplay = `<span class="inline-flex items-center px-2 py-1 bg-gray-100 text-yellow-700 rounded text-xs font-semibold mr-2"><i class='fab fa-osi mr-1'></i>Ola</span>`;
                 vehicleButton = `<a href="https://www.olacabs.com/" target="_blank" class="ml-2 px-3 py-1 text-xs bg-yellow-500 text-white rounded hover:bg-yellow-600 transition"><i class='fab fa-osi mr-1'></i>Open in Ola</a>`;
@@ -718,6 +718,18 @@
                         cancelBooking(ride.id);
                     });
                 }
+            }
+
+            if (vehicleButton && card.querySelector('.uber-open-btn')) {
+                card.querySelector('.uber-open-btn').addEventListener('click', function(e) {
+                    e.preventDefault();
+                    var appUrl = 'uber://?action=setPickup';
+                    var webUrl = 'https://m.uber.com/';
+                    var timeout = setTimeout(function() {
+                        window.open(webUrl, '_blank');
+                    }, 1000);
+                    window.location = appUrl;
+                });
             }
         }
         
