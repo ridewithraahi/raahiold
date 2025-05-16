@@ -97,9 +97,12 @@
 
         // Phone number validation
         function validatePhone(phone) {
-            const cleaned = phone.replace(/\D/g, '');
-            return /^[6-9]\d{9}$/.test(cleaned) || /^91[6-9]\d{9}$/.test(cleaned);
-        }
+       let cleaned = phone.replace(/\D/g, '');
+       if (cleaned.startsWith('91')) {
+           cleaned = cleaned.substring(2);
+       }
+       return /^[6-9]\d{9}$/.test(cleaned);
+   }
 
         // Load user data
         async function loadUserData() {
