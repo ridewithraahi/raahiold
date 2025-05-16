@@ -25,32 +25,35 @@ if (!$input || !isset($input['phone']) || !isset($input['otp'])) {
     sendResponse(false, 'Missing required parameters');
 }
 
-$phone = $input['phone'];
+$phone = preg_replace('/\D/', '', $input['phone']);
 $otp = $input['otp'];
 
 // Validate phone number
-if (!preg_match('/^\+91[6-9]\d{9}$/', $phone)) {
+if (!preg_match('/^[6-9]\d{9}$/', $phone)) {
     sendResponse(false, 'Invalid phone number format');
 }
 
-// Twilio credentials
-$account_sid = 'AC5c7c5c7c5c7c5c7c5c7c5c7c5c7c5c7c';
-$auth_token = '5c7c5c7c5c7c5c7c5c7c5c7c5c7c5c7c';
-$twilio_number = '+15005550006';
+// Fast2SMS API credentials
+$api_key = 'LVe05dq8RbXOQ4KYzwkPEutfpBIg2ZTcCs7NDG9ji1rHlonSaWBMshIdTp128zt9EmZOGonJAlrK0xWy';
 
-// Prepare Twilio request
-$url = "https://api.twilio.com/2010-04-01/Accounts/$account_sid/Messages.json";
+// Prepare Fast2SMS WhatsApp API request
+$url = 'https://www.fast2sms.com/dev/bulkV2';
 $data = array(
-    'To' => $phone,
-    'From' => $twilio_number,
-    'Body' => "Your Raahi verification code is: $otp. Valid for 5 minutes."
+    'route' => 'w', // WhatsApp route
+    'message' => "Your Raahi verification code is: $otp. Valid for 5 minutes.",
+    'numbers' => $phone,
+    'channel' => 'whatsapp'
 );
 
-// Send request
+$headers = array(
+    'Authorization: ' . $api_key,
+    'Content-Type: application/json'
+);
+
 $ch = curl_init($url);
 curl_setopt($ch, CURLOPT_POST, 1);
-curl_setopt($ch, CURLOPT_POSTFIELDS, http_build_query($data));
-curl_setopt($ch, CURLOPT_USERPWD, "$account_sid:$auth_token");
+curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($data));
+curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
 curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
 curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, true);
 
@@ -59,10 +62,10 @@ $http_code = curl_getinfo($ch, CURLINFO_HTTP_CODE);
 curl_close($ch);
 
 // Handle response
-if ($http_code >= 200 && $http_code < 300) {
+$response_data = json_decode($response, true);
+if ($http_code >= 200 && $http_code < 300 && isset($response_data['return']) && $response_data['return'] === true) {
     sendResponse(true, 'OTP sent successfully');
 } else {
-    $error_data = json_decode($response, true);
-    sendResponse(false, $error_data['message'] ?? 'Failed to send OTP', $error_data);
+    sendResponse(false, $response_data['message'] ?? 'Failed to send OTP', $response_data);
 }
 ?> 
