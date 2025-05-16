@@ -8,6 +8,7 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCmAnZmoJqH-Pq3ZwjE3D359IFw0B4LjRk&libraries=places"></script>
     <style>
         body {
             font-family: 'Inter', sans-serif;
@@ -91,38 +92,152 @@
         .no-icon i {
             display: none !important;
         }
+        
+        .car-animation {
+            animation: car-bounce 1s infinite alternate;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        @keyframes car-bounce {
+            0% { transform: translateY(0);}
+            100% { transform: translateY(-10px);}
+        }
+        /* Car animation for loader */
+        @keyframes car-move {
+            0% { left: -20%; opacity: 0; }
+            10% { opacity: 1; }
+            80% { opacity: 1; }
+            100% { left: 100%; opacity: 0; }
+        }
+        .car-anim {
+            animation: car-move 4s linear infinite;
+        }
+        /* Confetti styles */
+        .confetti {
+            position: fixed;
+            top: 0; left: 0; width: 100vw; height: 100vh;
+            pointer-events: none;
+            z-index: 100;
+        }
+        .confetti-piece {
+            position: absolute;
+            width: 10px; height: 20px;
+            border-radius: 3px;
+            opacity: 0.8;
+            animation: confetti-fall 2s linear forwards;
+        }
+        @keyframes confetti-fall {
+            to {
+                transform: translateY(100vh) rotate(360deg);
+                opacity: 0.7;
+            }
+        }
+        /* Floating message */
+        .float-msg {
+            animation: floatUp 2s ease;
+        }
+        @keyframes floatUp {
+            0% { opacity: 0; transform: translateY(40px);}
+            20% { opacity: 1;}
+            80% { opacity: 1;}
+            100% { opacity: 0; transform: translateY(-40px);}
+        }
+        .overlay-bg {
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.25);
+            backdrop-filter: blur(2px);
+            z-index: 40;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .car-anim {
+            position: relative;
+            width: 120px;
+            height: 60px;
+            margin: 0 auto;
+            overflow: visible;
+        }
+        .car-move {
+            position: absolute;
+            left: 0;
+            top: 0;
+            animation: car-move 4s linear infinite;
+        }
+        @keyframes car-move {
+            0% { left: -20%; opacity: 0; }
+            10% { opacity: 1; }
+            80% { opacity: 1; }
+            100% { left: 100%; opacity: 0; }
+        }
+        /* Force all FontAwesome icons to be solid black, not blurred or faded */
+        .fa, .fas, .far, .fab, [class^='fa-'] {
+            color: #000 !important;
+            opacity: 1 !important;
+            filter: none !important;
+            text-shadow: none !important;
+            -webkit-filter: none !important;
+            backdrop-filter: none !important;
+        }
+        #overlayCard, #cardOverlayMsg {
+            pointer-events: auto !important;
+        }
+        nav.fixed.bottom-0 {
+            z-index: 1001 !important;
+        }
+        #aiLoaderOverlay { z-index: 1000 !important; }
+        .car-loader {
+            position: relative;
+            min-height: 12rem;
+        }
+        .car {
+            /* Responsive scaling for SVGs */
+            max-width: 100%;
+            height: auto;
+            will-change: transform;
+        }
+        @media (max-width: 640px) {
+            .car-loader { min-height: 8rem; }
+            .car { width: 2.5rem !important; height: 1.2rem !important; }
+        }
+        @media (max-width: 400px) {
+            .car-loader { min-height: 6rem; }
+            .car { width: 2rem !important; height: 1rem !important; }
+        }
+        /* Car Animations */
+        @keyframes car-move {
+            0% { left: -20%; opacity: 0; }
+            10% { opacity: 1; }
+            80% { opacity: 1; }
+            100% { left: 100%; opacity: 0; }
+        }
+        @keyframes car-move2 {
+            0% { left: -30%; opacity: 0; }
+            15% { opacity: 1; }
+            85% { opacity: 1; }
+            100% { left: 100%; opacity: 0; }
+        }
+        @keyframes car-move3 {
+            0% { left: -25%; opacity: 0; }
+            20% { opacity: 1; }
+            80% { opacity: 1; }
+            100% { left: 100%; opacity: 0; }
+        }
+        .sedan { animation: car-move 2.5s linear infinite; }
+        .suv { animation: car-move2 3.2s linear infinite; }
+        .hatchback { animation: car-move3 2.8s linear infinite; }
+        .single-car { animation: car-move 2.8s linear infinite; }
     </style>
 </head>
 
 <body class="bg-gray-50 min-h-screen">
-    <!-- Header -->
-    <header class="bg-white shadow-sm">
-        <div class="container mx-auto px-4 py-4">
-            <h1 class="text-2xl font-bold text-gray-900">Find a Ride</h1>
-            <p class="text-gray-600">Join a journey with fellow students</p>
-        </div>
-    </header>
-    
-    <!-- Firebase Rules Warning Banner -->
-    <div id="firebaseRulesWarning" class="bg-yellow-50 border-l-4 border-yellow-400 p-4 mb-4 mx-4 rounded shadow-sm hidden">
-        <div class="flex">
-            <div class="flex-shrink-0">
-                <i class="fas fa-exclamation-triangle text-yellow-400"></i>
-            </div>
-            <div class="ml-3">
-                <p class="text-sm text-yellow-700">
-                    <strong>Firebase Rules Warning:</strong> The app is using local storage due to Firebase security rules.
-                    <a href="#" id="rulesInfoLink" class="font-medium underline text-yellow-700 hover:text-yellow-600">
-                        Learn more
-                    </a>
-                </p>
-            </div>
-        </div>
-    </div>
-
+    <!-- Fullscreen Map Background -->
+    <div id="fullscreenMap" style="position:fixed; top:0; left:0; width:100vw; height:100vh; z-index:0; pointer-events:none; user-select:none;"></div>
     <!-- Search Section -->
-    <div class="container mx-auto px-4 py-6">
-        <div class="bg-white rounded-xl shadow-sm p-6 mb-6">
+    <div id="formSection" style="position:fixed; top:0; left:0; width:100vw; height:100vh; display:flex; align-items:center; justify-content:center; background:rgba(255,255,255,0.6); z-index:2; pointer-events:auto;">
+        <div class="w-full max-w-md bg-white p-8 rounded-xl shadow space-y-6 relative overflow-hidden flex flex-col justify-center">
             <form id="searchForm" class="space-y-4">
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-2">From</label>
@@ -140,6 +255,8 @@
                     </div>
                 </div>
 
+                <div id="directionsList" style="display:none;"></div>
+
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-2">When</label>
                     <div class="relative">
@@ -148,87 +265,33 @@
                     </div>
                 </div>
 
-                <button type="submit" id="searchButton" class="w-full bg-green-600 text-white py-3 rounded-lg font-semibold hover:bg-green-700 transition duration-200 flex items-center justify-center">
-                    <i class="fas fa-search mr-2"></i>
-                    <span>Search Rides</span>
-                    <div id="searchSpinner" class="loading-spinner ml-2 hidden"></div>
+                <button id="viewRidesBtn" class="w-full bg-green-600 text-white py-2 rounded-lg font-semibold hover:bg-green-700 transition">
+                    Search Rides
                 </button>
             </form>
-        </div>
-
-        <!-- Available Rides -->
-        <div class="space-y-4">
-            <div class="flex justify-between items-center">
-                <h2 class="text-lg font-semibold">Available Rides</h2>
-                <div id="filterOptions" class="flex space-x-2">
-                    <button id="filterAll" class="text-sm px-3 py-1 rounded-full bg-green-600 text-white">All</button>
-                    <button id="filterToday" class="text-sm px-3 py-1 rounded-full bg-gray-200 text-gray-700">Today</button>
-                    <button id="filterTomorrow" class="text-sm px-3 py-1 rounded-full bg-gray-200 text-gray-700">Tomorrow</button>
+            <!-- Loader overlay inside card -->
+            <div id="overlayCard" style="display:none; position:absolute; inset:0; background:rgba(255,255,255,0.6); backdrop-filter:blur(2px); z-index:10; align-items:center; justify-content:center; border-radius:0.75rem;">
+                <!-- Original Good Green Car Loader Start -->
+                <div class="car-loader flex items-center justify-center w-full h-48 bg-transparent rounded-lg">
+                  <div class="relative w-full h-24 overflow-hidden">
+                    <!-- Good Green Car -->
+                    <svg class="car single-car absolute left-0 top-8 w-20 h-10 animate-car-move" viewBox="0 0 80 40" fill="none">
+                      <rect x="10" y="18" width="60" height="12" rx="5" fill="#059669"/>
+                      <rect x="22" y="10" width="36" height="12" rx="4" fill="#10b981"/>
+                      <circle cx="22" cy="32" r="5" fill="#222"/>
+                      <circle cx="58" cy="32" r="5" fill="#222"/>
+                    </svg>
+                  </div>
+                  <div class="absolute bottom-4 left-0 w-full flex justify-center">
+                    <span class="text-green-700 text-lg font-medium mt-32">Searching for rides...</span>
+                  </div>
                 </div>
+                <!-- Original Good Green Car Loader End -->
             </div>
-
-            <div id="ridesContainer" class="space-y-4">
-                <!-- Loading skeletons -->
-                <div class="skeleton-item bg-white rounded-xl shadow-sm p-6">
-                    <div class="flex justify-between items-start mb-4">
-                        <div class="flex-1">
-                            <div class="flex items-center space-x-3 mb-2">
-                                <div class="w-10 h-10 rounded-full skeleton"></div>
-                                <div>
-                                    <div class="h-5 w-32 skeleton mb-2"></div>
-                                    <div class="h-4 w-24 skeleton"></div>
-                                </div>
-                            </div>
-                            <div class="space-y-2 mt-2">
-                                <div class="h-4 w-40 skeleton"></div>
-                                <div class="h-4 w-48 skeleton"></div>
-                            </div>
-                        </div>
-                        <div class="h-6 w-12 skeleton"></div>
-                    </div>
-                    <div class="flex items-center justify-between mb-4">
-                        <div class="h-4 w-24 skeleton"></div>
-                        <div class="h-4 w-24 skeleton"></div>
-                        <div class="h-4 w-24 skeleton"></div>
-                    </div>
-                    <div class="h-10 w-full skeleton rounded-lg"></div>
-                </div>
-                
-                <div class="skeleton-item bg-white rounded-xl shadow-sm p-6">
-                    <div class="flex justify-between items-start mb-4">
-                        <div class="flex-1">
-                            <div class="flex items-center space-x-3 mb-2">
-                                <div class="w-10 h-10 rounded-full skeleton"></div>
-                                <div>
-                                    <div class="h-5 w-32 skeleton mb-2"></div>
-                                    <div class="h-4 w-24 skeleton"></div>
-                                </div>
-                            </div>
-                            <div class="space-y-2 mt-2">
-                                <div class="h-4 w-40 skeleton"></div>
-                                <div class="h-4 w-48 skeleton"></div>
-                            </div>
-                        </div>
-                        <div class="h-6 w-12 skeleton"></div>
-                    </div>
-                    <div class="flex items-center justify-between mb-4">
-                        <div class="h-4 w-24 skeleton"></div>
-                        <div class="h-4 w-24 skeleton"></div>
-                        <div class="h-4 w-24 skeleton"></div>
-                    </div>
-                    <div class="h-10 w-full skeleton rounded-lg"></div>
-                </div>
-
-                <!-- No Rides Message (Initially Hidden) -->
-                <div id="noRidesMessage" class="hidden bg-white rounded-xl shadow-sm p-6 text-center">
-                    <i class="fas fa-car-side text-gray-400 text-4xl mb-4"></i>
-                    <h3 class="text-lg font-medium text-gray-900 mb-2">No rides available</h3>
-                    <p class="text-gray-600">No one is going your way yet. Be the first to post a ride!</p>
-                    <a href="Untitled-2.html" class="inline-block mt-4 text-green-600 font-medium hover:text-green-700">
-                        Post a Ride
-                    </a>
-                </div>
-            </div>
+            <!-- Matching rides will be shown here after search -->
+            <div id="matchingRides" style="display:none; position:relative;"></div>
+            <!-- Full card overlay message for booking -->
+            <div id="cardOverlayMsg" style="display:none; position:absolute; inset:0; background:rgba(44,62,80,0.08); z-index:30; align-items:center; justify-content:center;"></div>
         </div>
     </div>
 
@@ -313,6 +376,82 @@
         </div>
     </nav>
 
+    <!-- Rides List Section -->
+    <div id="ridesSection" class="hidden w-full max-w-2xl mt-16">
+        <h2 class="text-2xl font-bold mb-6 text-center">Matching Rides</h2>
+        <div id="ridesList"></div>
+    </div>
+
+    <!-- Confetti Container -->
+    <div id="confetti" class="confetti"></div>
+    <!-- Floating Message -->
+    <div id="floatMsg" class="fixed bottom-8 left-1/2 -translate-x-1/2 bg-green-600 text-white px-6 py-3 rounded-lg shadow-lg text-lg font-semibold z-50 hidden"></div>
+
+    <!-- Loader Overlay: Pinterest-style car loader -->
+    <div id="aiLoaderOverlay" style="display:none; position:fixed; inset:0; z-index:1000; background:rgba(44,62,80,0.18); backdrop-filter:blur(3px); align-items:center; justify-content:center;">
+        <div style="background:rgba(255,255,255,0.98); border-radius: 18px; box-shadow: 0 8px 32px rgba(0,0,0,0.18); padding: 48px 44px 38px 44px; display: flex; flex-direction: column; align-items: center; min-width: 340px; min-height: 260px;">
+            <div style="width:260px; height:180px; position:relative; margin-bottom: 18px;">
+                <svg viewBox="0 0 260 180" width="260" height="180">
+                    <!-- Stopwatch Arc -->
+                    <path d="M40 140 A90 90 0 0 1 220 140" fill="none" stroke="#222" stroke-width="10"/>
+                    <!-- Stopwatch Ticks -->
+                    <rect x="127" y="28" width="6" height="28" rx="2" fill="#222"/>
+                    <rect x="200" y="60" width="6" height="20" rx="2" fill="#222" transform="rotate(25 203 70)"/>
+                    <!-- Car Body -->
+                    <rect x="80" y="90" width="100" height="36" rx="18" fill="#fff" stroke="#222" stroke-width="3"/>
+                    <rect x="100" y="76" width="60" height="20" rx="8" fill="#fff" stroke="#222" stroke-width="3"/>
+                    <!-- Car Roof -->
+                    <polyline points="105,108 115,80 165,80 175,108" fill="none" stroke="#222" stroke-width="3"/>
+                    <!-- Car Windows -->
+                    <rect x="110" y="84" width="20" height="10" rx="3" fill="#e0e0e0"/>
+                    <rect x="130" y="84" width="20" height="10" rx="3" fill="#e0e0e0"/>
+                    <rect x="150" y="84" width="10" height="10" rx="3" fill="#e0e0e0"/>
+                    <!-- Wheels (animated) -->
+                    <g class="wheel-group">
+                        <circle cx="100" cy="140" r="18" fill="#cddc39" stroke="#222" stroke-width="4"/>
+                        <circle cx="100" cy="140" r="11" fill="#fff" stroke="#222" stroke-width="2"/>
+                        <circle cx="100" cy="140" r="7" fill="#cddc39" stroke="#222" stroke-width="1"/>
+                    </g>
+                    <g class="wheel-group">
+                        <circle cx="180" cy="140" r="18" fill="#cddc39" stroke="#222" stroke-width="4"/>
+                        <circle cx="180" cy="140" r="11" fill="#fff" stroke="#222" stroke-width="2"/>
+                        <circle cx="180" cy="140" r="7" fill="#cddc39" stroke="#222" stroke-width="1"/>
+                    </g>
+                    <!-- Location pins -->
+                    <g>
+                        <circle cx="40" cy="140" r="12" fill="#222"/>
+                        <circle cx="40" cy="140" r="5" fill="#cddc39"/>
+                        <circle cx="220" cy="140" r="12" fill="#222"/>
+                        <circle cx="220" cy="140" r="5" fill="#cddc39"/>
+                    </g>
+                </svg>
+                <style>
+                    .ai-loader-spin {
+                        animation: ai-spin 1s linear infinite;
+                        transform-origin: center;
+                    }
+                    @keyframes ai-spin {
+                        100% { transform: rotate(360deg); }
+                    }
+                </style>
+                <script>
+                    window.addEventListener('DOMContentLoaded', function() {
+                        document.querySelectorAll('#aiLoaderOverlay .wheel-group').forEach(function(g) {
+                            g.classList.add('ai-loader-spin');
+                        });
+                    });
+                </script>
+            </div>
+            <div style="font-size:1.5rem; font-weight:700; color:#222; letter-spacing:1px; margin-bottom:8px;">PLEASE WAIT</div>
+            <div style="font-size:1.1rem; color:#555; letter-spacing:1px;">WE'RE LOOKING FOR AVAILABLE CARS</div>
+        </div>
+    </div>
+
+    <!-- Confetti -->
+    <div id="confetti" style="pointer-events:none; position:fixed; top:0; left:0; width:100vw; height:100vh; z-index:2000;"></div>
+    <!-- Floating Message -->
+    <div id="floatMsg" style="display:none; position:fixed; bottom:2rem; left:50%; transform:translateX(-50%); background:#059669; color:white; padding:1rem 2rem; border-radius:1rem; font-size:1.2rem; font-weight:600; z-index:2001; box-shadow:0 4px 24px #0002;"></div>
+
     <!-- Firebase SDK -->
     <script type="module">
         // Import Firebase functions
@@ -337,7 +476,7 @@
         const searchForm = document.getElementById('searchForm');
         const destination = document.getElementById('destination');
         const rideDate = document.getElementById('rideDate');
-        const searchButton = document.getElementById('searchButton');
+        const searchButton = document.getElementById('viewRidesBtn');
         const searchSpinner = document.getElementById('searchSpinner');
         const ridesContainer = document.getElementById('ridesContainer');
         const noRidesMessage = document.getElementById('noRidesMessage');
@@ -347,6 +486,9 @@
         const rideDetailsModal = document.getElementById('rideDetailsModal');
         const closeModalBtn = document.getElementById('closeModalBtn');
         const requestRideBtn = document.getElementById('requestRideBtn');
+        const overlayCard = document.getElementById('overlayCard');
+        const formSection = document.getElementById('formSection');
+        const matchingRides = document.getElementById('matchingRides');
         
         // Set minimum date to today
         const today = new Date();
@@ -556,38 +698,138 @@
                 if (currentUser && currentUser.uid) {
                     allRides = allRides.filter(ride => ride && ride.driverId !== currentUser.uid);
                 }
-                
-                // Apply search filters if provided
-                let filteredRides = [...allRides];
-                
-                if (searchStartingPoint) {
-                    const searchStartTerm = searchStartingPoint.toLowerCase();
-                    filteredRides = filteredRides.filter(ride => 
-                        ride && ride.startingPoint && ride.startingPoint.toLowerCase().includes(searchStartTerm)
-                    );
-                }
-                
-                if (searchDestination) {
-                    const searchTerm = searchDestination.toLowerCase();
-                    filteredRides = filteredRides.filter(ride => 
-                        ride && ride.destination && ride.destination.toLowerCase().includes(searchTerm)
-                    );
-                }
-                
-                if (searchDate) {
-                    const searchDateObj = new Date(searchDate);
-                    searchDateObj.setHours(0, 0, 0, 0);
+
+                // AI Matchmaking Logic
+                let matchedRides = [];
+                if (searchStartingPoint && searchDestination) {
+                    // Get coordinates for search locations
+                    const geocoder = new google.maps.Geocoder();
                     
-                    filteredRides = filteredRides.filter(ride => {
-                        if (!ride || !ride.date) return false;
-                        const rideDate = new Date(ride.date);
-                        rideDate.setHours(0, 0, 0, 0);
-                        return rideDate.getTime() === searchDateObj.getTime();
-                    });
+                    const getCoordinates = async (address) => {
+                        return new Promise((resolve, reject) => {
+                            geocoder.geocode({ address: address }, (results, status) => {
+                                if (status === 'OK') {
+                                    resolve(results[0].geometry.location);
+                                } else {
+                                    reject(new Error('Geocoding failed'));
+                                }
+                            });
+                        });
+                    };
+
+                    try {
+                        const searchStartCoords = await getCoordinates(searchStartingPoint);
+                        const searchDestCoords = await getCoordinates(searchDestination);
+
+                        // Calculate distance between coordinates
+                        const calculateDistance = (lat1, lon1, lat2, lon2) => {
+                            const R = 6371; // Earth's radius in km
+                            const dLat = (lat2 - lat1) * Math.PI / 180;
+                            const dLon = (lon2 - lon1) * Math.PI / 180;
+                            const a = Math.sin(dLat/2) * Math.sin(dLat/2) +
+                                    Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * 
+                                    Math.sin(dLon/2) * Math.sin(dLon/2);
+                            const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+                            return R * c;
+                        };
+
+                        // Score each ride based on multiple factors
+                        matchedRides = allRides.map(ride => {
+                            let score = 0;
+                            let hasCoords = ride.startingPointLat && ride.startingPointLng && ride.destinationLat && ride.destinationLng;
+                            if (hasCoords) {
+                                // Location matching (60% weight)
+                                const rideStartCoords = new google.maps.LatLng(
+                                    ride.startingPointLat,
+                                    ride.startingPointLng
+                                );
+                                const rideDestCoords = new google.maps.LatLng(
+                                    ride.destinationLat,
+                                    ride.destinationLng
+                                );
+
+                                const startDistance = calculateDistance(
+                                    searchStartCoords.lat(),
+                                    searchStartCoords.lng(),
+                                    rideStartCoords.lat(),
+                                    rideStartCoords.lng()
+                                );
+                                const destDistance = calculateDistance(
+                                    searchDestCoords.lat(),
+                                    searchDestCoords.lng(),
+                                    rideDestCoords.lat(),
+                                    rideDestCoords.lng()
+                                );
+
+                                // Score based on distance (closer = higher score)
+                                score += (60 * (1 / (1 + startDistance + destDistance)));
+                            } else {
+                                // Fallback: string matching (30% weight)
+                                if (
+                                    ride.startingPoint && ride.startingPoint.toLowerCase().includes(searchStartingPoint.toLowerCase()) &&
+                                    ride.destination && ride.destination.toLowerCase().includes(searchDestination.toLowerCase())
+                                ) {
+                                    score += 30;
+                                }
+                            }
+
+                            // Time matching (20% weight)
+                            if (searchDate) {
+                                const searchDateObj = new Date(searchDate);
+                                const rideDateObj = new Date(ride.date);
+                                const timeDiff = Math.abs(searchDateObj - rideDateObj) / (1000 * 60 * 60); // hours
+                                score += (20 * (1 / (1 + timeDiff)));
+                            }
+
+                            // Price matching (10% weight)
+                            const avgPrice = 500; // Average price per seat
+                            const priceDiff = Math.abs(ride.price - avgPrice);
+                            score += (10 * (1 / (1 + priceDiff/avgPrice)));
+
+                            // Available seats (10% weight)
+                            score += (10 * (ride.availableSeats / 4)); // Assuming max 4 seats
+
+                            return {
+                                ...ride,
+                                matchScore: score
+                            };
+                        });
+
+                        // Sort by match score
+                        matchedRides.sort((a, b) => b.matchScore - a.matchScore);
+
+                        // Filter out low matches (score < 10)
+                        matchedRides = matchedRides.filter(ride => ride.matchScore > 10);
+
+                        // Add match percentage to each ride
+                        matchedRides = matchedRides.map(ride => ({
+                            ...ride,
+                            matchPercentage: Math.round(ride.matchScore)
+                        }));
+
+                        // If still no rides, fallback to string matching
+                        if (matchedRides.length === 0) {
+                            matchedRides = allRides.filter(ride =>
+                                ride.startingPoint && ride.startingPoint.toLowerCase().includes(searchStartingPoint.toLowerCase()) &&
+                                ride.destination && ride.destination.toLowerCase().includes(searchDestination.toLowerCase())
+                            );
+                        }
+
+                        console.log('AI Matched Rides:', matchedRides);
+                    } catch (error) {
+                        console.error('Error in AI matching:', error);
+                        // Fallback: simple string matching
+                        matchedRides = allRides.filter(ride =>
+                            ride.startingPoint && ride.startingPoint.toLowerCase().includes(searchStartingPoint.toLowerCase()) &&
+                            ride.destination && ride.destination.toLowerCase().includes(searchDestination.toLowerCase())
+                        );
+                    }
+                } else {
+                    matchedRides = allRides;
                 }
                 
                 // Cache the filtered results
-                cachedFilteredRides = filteredRides;
+                cachedFilteredRides = matchedRides;
                 lastFilterParams = filterParams;
                 
                 // Remove skeletons with a smooth transition
@@ -600,8 +842,8 @@
                 });
                 
                 // Display rides
-                console.log(`Displaying ${filteredRides.length} rides after filtering`);
-                displayRides(filteredRides);
+                console.log(`Displaying ${matchedRides.length} rides after AI matching`);
+                displayRides(matchedRides);
             } catch (error) {
                 console.error('Error loading rides:', error);
                 
@@ -705,46 +947,52 @@
                 hour12: true
             });
 
+            // Add match percentage if available
+            const matchBadge = '';
+
             card.innerHTML = `
-                <div class="flex justify-between items-start mb-4">
-                    <div class="flex-1">
-                        <div class="flex items-center space-x-3 mb-2">
-                            <img src="${ride.driverProfilePicture || 'https://ui-avatars.com/api/?name=User&background=10B981&color=fff'}" 
-                                 alt="Driver" class="w-10 h-10 rounded-full object-cover">
-                            <div>
-                                <h3 class="font-semibold text-gray-900">${ride.driverName || 'User'}</h3>
+                <div class="relative">
+                    <!-- Match badge removed -->
+                    <div class="flex justify-between items-start mb-4">
+                        <div class="flex-1">
+                            <div class="flex items-center space-x-3 mb-2">
+                                <img src="${ride.driverProfilePicture || 'https://ui-avatars.com/api/?name=User&background=10B981&color=fff'}" 
+                                     alt="Driver" class="w-10 h-10 rounded-full object-cover">
+                                <div>
+                                    <h3 class="font-semibold text-gray-900">${ride.driverName || 'User'}</h3>
+                                </div>
+                            </div>
+                            <div class="space-y-2">
+                                <p class="text-gray-600">
+                                    <i class="fas fa-map-marker-alt text-green-600 mr-2"></i>
+                                    From: ${ride.startingPoint}
+                                </p>
+                                <p class="text-gray-600">
+                                    <i class="fas fa-map-marker text-green-600 mr-2"></i>
+                                    To: ${ride.destination}
+                                </p>
                             </div>
                         </div>
-                        <div class="space-y-2">
-                            <p class="text-gray-600">
-                                <i class="fas fa-map-marker-alt text-green-600 mr-2"></i>
-                                From: ${ride.startingPoint}
-                            </p>
-                            <p class="text-gray-600">
-                                <i class="fas fa-map-marker text-green-600 mr-2"></i>
-                                To: ${ride.destination}
-                            </p>
+                        <p class="text-lg font-bold text-green-600">₹${ride.price}</p>
+                    </div>
+                    <div class="flex items-center justify-between mb-4">
+                        <div class="flex items-center text-sm text-gray-500">
+                            <i class="fas fa-calendar mr-2"></i>
+                            ${dateText}
+                        </div>
+                        <div class="flex items-center text-sm text-gray-500">
+                            <i class="fas fa-clock mr-2"></i>
+                            ${timeText}
+                        </div>
+                        <div class="flex items-center text-sm text-gray-500">
+                            <i class="fas fa-user mr-2"></i>
+                            ${ride.availableSeats} seats left
                         </div>
                     </div>
-                    <p class="text-lg font-bold text-green-600">₹${ride.price}</p>
+                    <button class="view-details-btn w-full bg-green-600 text-white py-2 rounded-lg font-medium hover:bg-green-700 transition duration-200" data-ride-id="${ride.id}">
+                        View Details
+                    </button>
                 </div>
-                <div class="flex items-center justify-between mb-4">
-                    <div class="flex items-center text-sm text-gray-500">
-                        <i class="fas fa-calendar mr-2"></i>
-                        ${dateText}
-                    </div>
-                    <div class="flex items-center text-sm text-gray-500">
-                        <i class="fas fa-clock mr-2"></i>
-                        ${timeText}
-                    </div>
-                    <div class="flex items-center text-sm text-gray-500">
-                        <i class="fas fa-user mr-2"></i>
-                        ${ride.availableSeats} seats left
-                    </div>
-                </div>
-                <button class="view-details-btn w-full bg-green-600 text-white py-2 rounded-lg font-medium hover:bg-green-700 transition duration-200" data-ride-id="${ride.id}">
-                    View Details
-                </button>
             `;
 
             // Add click event listener to the view details button
@@ -997,16 +1245,40 @@
         });
         
         // Search form submission
-        searchForm.addEventListener('submit', async function(e) {
-            e.preventDefault();
+        if (searchForm) {
+            // Handle form submission
+            searchForm.addEventListener('submit', async function(e) {
+                e.preventDefault();
+                handleSearch();
+            });
+
+            // Handle button click
+            if (searchButton) {
+                searchButton.addEventListener('click', async function(e) {
+                    e.preventDefault();
+                    handleSearch();
+                });
+            }
+        }
+        
+        // Common search handling function
+        async function handleSearch() {
+            const pickup = document.getElementById('startingPoint').value.trim();
+            const drop = document.getElementById('destination').value.trim();
+            
+            if (!pickup || !drop) {
+                alert('Please enter both pickup and drop locations');
+                return;
+            }
             
             // Show loading spinner
-            searchButton.disabled = true;
-            searchSpinner.classList.remove('hidden');
+            if (searchButton) searchButton.disabled = true;
+            if (searchSpinner) searchSpinner.classList.remove('hidden');
+            if (overlayCard) overlayCard.style.display = 'flex';
             
             // Get search parameters
-            const searchStartingPoint = startingPoint.value.trim();
-            const searchDestination = destination.value.trim();
+            const searchStartingPoint = pickup;
+            const searchDestination = drop;
             const searchDate = rideDate.value;
             
             console.log('Searching for rides:', { 
@@ -1016,12 +1288,18 @@
             });
             
             // Reset filters
-            filterAll.classList.add('bg-green-600', 'text-white');
-            filterAll.classList.remove('bg-gray-200', 'text-gray-700');
-            filterToday.classList.add('bg-gray-200', 'text-gray-700');
-            filterToday.classList.remove('bg-green-600', 'text-white');
-            filterTomorrow.classList.add('bg-gray-200', 'text-gray-700');
-            filterTomorrow.classList.remove('bg-green-600', 'text-white');
+            if (filterAll) {
+                filterAll.classList.add('bg-green-600', 'text-white');
+                filterAll.classList.remove('bg-gray-200', 'text-gray-700');
+            }
+            if (filterToday) {
+                filterToday.classList.add('bg-gray-200', 'text-gray-700');
+                filterToday.classList.remove('bg-green-600', 'text-white');
+            }
+            if (filterTomorrow) {
+                filterTomorrow.classList.add('bg-gray-200', 'text-gray-700');
+                filterTomorrow.classList.remove('bg-green-600', 'text-white');
+            }
             
             try {
                 // Load rides with search parameters
@@ -1032,18 +1310,25 @@
                 
                 // If no rides found, show a message
                 if (allRides.length === 0) {
-                    // This will be handled by displayRides function
                     console.log('No rides found matching the search criteria');
                 }
+                
+                // Hide form, show matching rides in the same card
+                setTimeout(() => {
+                    if (overlayCard) overlayCard.style.display = 'none';
+                    if (searchForm) searchForm.style.display = 'none';
+                    showRidesInCard(pickup, drop);
+                }, 2200);
+                
             } catch (error) {
                 console.error('Error during search:', error);
                 alert('There was an error searching for rides. Please try again.');
             } finally {
-                // Hide loading spinner
-                searchButton.disabled = false;
-                searchSpinner.classList.add('hidden');
+                // Hide loading spinner and re-enable button
+                if (searchButton) searchButton.disabled = false;
+                if (searchSpinner) searchSpinner.classList.add('hidden');
             }
-        });
+        }
         
         // Filter buttons
         filterAll.addEventListener('click', function() {
@@ -1141,6 +1426,185 @@
             console.log(`Found ${tomorrowRides.length} rides for tomorrow`);
             displayRides(tomorrowRides);
         }
+
+        function showLoader() {
+            document.getElementById('aiLoaderOverlay').style.display = 'flex';
+        }
+        function hideLoader() {
+            document.getElementById('aiLoaderOverlay').style.display = 'none';
+        }
+    </script>
+
+    <script>
+        // Initialize Google Maps in fullscreen background
+        let map;
+        let directionsService;
+        let directionsRenderer;
+        let startMarker;
+        let endMarker;
+        function initMap() {
+            // Use the fullscreen map div
+            map = new google.maps.Map(document.getElementById('fullscreenMap'), {
+                center: { lat: 20.5937, lng: 78.9629 },
+                zoom: 5
+            });
+            directionsService = new google.maps.DirectionsService();
+            directionsRenderer = new google.maps.DirectionsRenderer({
+                map: map,
+                suppressMarkers: true
+            });
+            // ... existing autocomplete logic ...
+            const startInput = document.getElementById('startingPoint');
+            const endInput = document.getElementById('destination');
+            const startAutocomplete = new google.maps.places.Autocomplete(startInput);
+            const endAutocomplete = new google.maps.places.Autocomplete(endInput);
+            startAutocomplete.addListener('place_changed', () => {
+                const place = startAutocomplete.getPlace();
+                if (place.geometry) {
+                    if (startMarker) startMarker.setMap(null);
+                    startMarker = new google.maps.Marker({
+                        position: place.geometry.location,
+                        map: map,
+                        icon: {
+                            path: google.maps.SymbolPath.CIRCLE,
+                            scale: 10,
+                            fillColor: '#059669',
+                            fillOpacity: 1,
+                            strokeColor: '#ffffff',
+                            strokeWeight: 2
+                        }
+                    });
+                    calculateRoute();
+                }
+            });
+            endAutocomplete.addListener('place_changed', () => {
+                const place = endAutocomplete.getPlace();
+                if (place.geometry) {
+                    if (endMarker) endMarker.setMap(null);
+                    endMarker = new google.maps.Marker({
+                        position: place.geometry.location,
+                        map: map,
+                        icon: {
+                            path: google.maps.SymbolPath.CIRCLE,
+                            scale: 10,
+                            fillColor: '#e11d48',
+                            fillOpacity: 1,
+                            strokeColor: '#ffffff',
+                            strokeWeight: 2
+                        }
+                    });
+                    calculateRoute();
+                }
+            });
+        }
+        function calculateRoute() {
+            if (!startMarker || !endMarker) return;
+            const request = {
+                origin: startMarker.getPosition(),
+                destination: endMarker.getPosition(),
+                travelMode: google.maps.TravelMode.DRIVING
+            };
+            directionsService.route(request, (result, status) => {
+                if (status === 'OK') {
+                    directionsRenderer.setDirections(result);
+                    // Display route info
+                    const route = result.routes[0];
+                    const distance = route.legs[0].distance.text;
+                    const duration = route.legs[0].duration.text;
+                    document.getElementById('directionsList').innerHTML = `
+                        <div class="bg-green-50 p-4 rounded-lg">
+                            <p class="text-green-800"><i class="fas fa-road mr-2"></i>Distance: ${distance}</p>
+                            <p class="text-green-800"><i class="fas fa-clock mr-2"></i>Duration: ${duration}</p>
+                        </div>
+                    `;
+                }
+            });
+        }
+        window.onload = initMap;
+    </script>
+
+    <script>
+        // Dummy ride data
+        const DUMMY_RIDES = [
+            { id: 1, driver: "Amit", pickup: "Sector 18", drop: "Noida City Center", price: 80, seats: 2, date: "2025-05-29T11:00:00" },
+            { id: 2, driver: "Priya", pickup: "Noida Sector 18", drop: "Botanical Garden", price: 60, seats: 1, date: "2025-05-29T12:00:00" },
+            { id: 3, driver: "Rahul", pickup: "Noida", drop: "CP", price: 120, seats: 3, date: "2025-05-29T13:00:00" },
+            { id: 4, driver: "Riya", pickup: "Bennett University, TechZone 2, Greater Noida, Uttar Pradesh, India", drop: "Indira Gandhi International Airport (DEL), New Delhi, Delhi, India", price: 280, seats: 3, date: "2025-05-29T11:00:00" },
+        ];
+
+        function fuzzyMatch(str1, str2) {
+            if (!str1 || !str2) return false;
+            return str1.toLowerCase().includes(str2.toLowerCase());
+        }
+
+        function showRidesInCard(pickup, drop) {
+            // Filter rides
+            const results = DUMMY_RIDES.filter(
+                r => fuzzyMatch(r.pickup, pickup) && fuzzyMatch(r.drop, drop)
+            );
+            let html = '';
+            if (results.length === 0) {
+                html = `<div class='bg-white p-8 rounded-xl shadow text-center text-gray-500'>No rides found for your route.</div>`;
+            } else {
+                results.forEach(ride => {
+                    const rideDate = new Date(ride.date);
+                    html += `
+                    <div class=\"bg-white rounded-xl shadow p-6 flex flex-col md:flex-row justify-between items-center mb-4\">
+                        <div class=\"flex-1\">
+                            <div class=\"font-semibold text-lg\">${ride.pickup} → ${ride.drop}</div>
+                            <div class=\"text-gray-600\">Driver: ${ride.driver}</div>
+                            <div class=\"text-gray-600\">Date: ${rideDate.toLocaleDateString()} | Time: ${rideDate.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</div>
+                            <div class=\"text-gray-600\">Price: ₹${ride.price} | Seats: ${ride.seats}</div>
+                        </div>
+                        <button class=\"bg-green-600 text-white px-4 py-2 rounded-lg font-semibold hover:bg-green-700 transition bookBtn mt-4 md:mt-0\">Book Now</button>
+                    </div>
+                    `;
+                });
+            }
+            html += `<button id='searchAgainBtn' class='mt-4 w-full bg-gray-200 text-gray-700 py-2 rounded-lg font-semibold hover:bg-gray-300 transition'>Search Again</button>`;
+            matchingRides.innerHTML = html;
+            matchingRides.style.display = '';
+            // Book Now logic
+            matchingRides.querySelectorAll('.bookBtn').forEach(btn => {
+                btn.onclick = function() {
+                    showCardOverlayMsg('Your booking request is sent. Wait for confirmation.');
+                    this.textContent = 'Booked';
+                    this.disabled = true;
+                };
+            });
+            // Search Again logic
+            document.getElementById('searchAgainBtn').onclick = function() {
+                matchingRides.style.display = 'none';
+                searchForm.style.display = '';
+            };
+        }
+
+        // Full card overlay message with animation
+        function showCardOverlayMsg(msg) {
+            const overlay = document.getElementById('cardOverlayMsg');
+            overlay.innerHTML = `<div style="background:#059669; color:white; padding:2rem 2.5rem; border-radius:1.5rem; font-size:1.2rem; font-weight:600; box-shadow:0 8px 32px #0003; display:flex; align-items:center; justify-content:center; min-width:260px; min-height:80px; animation:msgPopIn 0.5s cubic-bezier(.68,-0.55,.27,1.55); text-align:center;">${msg}</div>`;
+            overlay.style.display = 'flex';
+            overlay.style.opacity = '0';
+            overlay.style.pointerEvents = 'auto';
+            setTimeout(() => {
+                overlay.style.transition = 'opacity 0.3s';
+                overlay.style.opacity = '1';
+            }, 10);
+            setTimeout(() => {
+                overlay.style.transition = 'opacity 0.5s';
+                overlay.style.opacity = '0';
+                setTimeout(() => {
+                    overlay.style.display = 'none';
+                    overlay.style.transition = '';
+                    overlay.innerHTML = '';
+                }, 500);
+            }, 2600);
+        }
+
+        // Add animation keyframes for msgPopIn
+        const style = document.createElement('style');
+        style.innerHTML = `@keyframes msgPopIn { 0% { transform: scale(0.85); opacity:0; } 60% { transform: scale(1.05); opacity:1; } 100% { transform: scale(1); opacity:1; } }`;
+        document.head.appendChild(style);
     </script>
 </body>
 
