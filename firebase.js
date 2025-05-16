@@ -10,7 +10,7 @@ import {
 } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
 import { getDatabase, ref, set, get, push, update, remove, onValue, query, orderByChild, equalTo } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-database.js";
 import { getStorage, ref as storageRef, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-storage.js";
-import { formatPhoneNumber } from './twilio.js';
+import { formatPhoneNumber } from './fast2sms.js';
 
 // Your web app's Firebase configuration
 const firebaseConfig = {
