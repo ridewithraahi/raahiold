@@ -1,7 +1,9 @@
-// Twilio configuration
-const TESTING_MODE = true; // Set to false in production
+// Fast2SMS configuration
+const FAST2SMS_API_KEY = 'LVe05dq8RbXOQ4KYzwkPEutfpBIg2ZTcCs7NDG9ji1rHlonSaWBMshIdTp128zt9EmZOGonJAlrK0xWy';
+const TESTING_MODE = false; // Set to false in production
+const API_BASE_URL = 'http://localhost:3001'; // Added base URL with new port
 
-// Format phone number to E.164 format
+// Format phone number to Indian format
 export function formatPhoneNumber(phoneNumber) {
   // Remove all non-digit characters
   let cleaned = phoneNumber.replace(/\D/g, "");
@@ -19,7 +21,7 @@ export function formatPhoneNumber(phoneNumber) {
     throw new Error("Invalid Indian mobile number format");
   }
 
-  return "+91" + cleaned;
+  return cleaned;
 }
 
 // Generate a random 6-digit OTP
@@ -27,40 +29,41 @@ function generateOTP() {
   return Math.floor(100000 + Math.random() * 900000).toString();
 }
 
-// Send OTP
+// Send OTP via Fast2SMS WhatsApp
 export async function sendOTP(phoneNumber) {
   try {
     const formattedNumber = formatPhoneNumber(phoneNumber);
+    const otp = generateOTP();
 
     if (TESTING_MODE) {
-      // In testing mode, store OTP in session storage
-      const testOTP = generateOTP();
-      console.log("🔐 Test Mode - Your OTP is:", testOTP);
-      sessionStorage.setItem("testOTP", testOTP);
+      // Store OTP for testing
+      sessionStorage.setItem("testOTP", otp);
       sessionStorage.setItem("testPhone", formattedNumber);
       sessionStorage.setItem("otpSentAt", Date.now().toString());
-      // Show OTP as an alert
-      alert("Your OTP is: " + testOTP);
       return true;
     }
 
-    // This part will be used when we have the server running
-    const response = await fetch("/api/send-otp", {
+    // Send OTP via Fast2SMS WhatsApp API
+    const response = await fetch(`${API_BASE_URL}/api/send-otp`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
+        "Authorization": FAST2SMS_API_KEY
       },
-      body: JSON.stringify({ phone: formattedNumber }),
+      body: JSON.stringify({
+        phone: formattedNumber
+      })
     });
 
     const data = await response.json();
-
-    if (!data.success) {
+    console.log("Fast2SMS Response:", data); // Added for debugging
+    
+    if (data.success) {
+      sessionStorage.setItem("otpSentAt", Date.now().toString());
+      return true;
+    } else {
       throw new Error(data.message || "Failed to send OTP");
     }
-
-    sessionStorage.setItem("otpSentAt", Date.now().toString());
-    return true;
   } catch (error) {
     console.error("Error sending OTP:", error);
     throw new Error("Failed to send OTP. Please try again.");
@@ -100,8 +103,8 @@ export async function verifyOTP(phoneNumber, userOTP) {
       return isValid;
     }
 
-    // This part will be used when we have the server running
-    const response = await fetch("/api/verify-otp", {
+    // In production, verify against backend
+    const response = await fetch(`${API_BASE_URL}/api/verify-otp`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -145,14 +148,4 @@ export function getOTPRemainingTime() {
   const diff = now - parseInt(sentAt);
   const remaining = 5 * 60 - Math.floor(diff / 1000);
   return Math.max(0, remaining);
-}
-
-// Log Twilio errors for debugging
-function logTwilioError(error) {
-  console.error("Twilio Error:", {
-    message: error.message,
-    code: error.code,
-    moreInfo: error.moreInfo,
-    status: error.status,
-  });
-}
+} 
