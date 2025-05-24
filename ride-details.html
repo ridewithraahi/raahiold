@@ -261,7 +261,7 @@
                 // Get ride details with fallback to local storage
                 try {
                     currentRide = await getRide(selectedRideId);
-                    console.log('Current Ride:', currentRide);
+                    console.log('Current Ride object after fetching:', currentRide);
                     
                     if (!currentRide) {
                         // Check local storage for mock rides
@@ -439,7 +439,7 @@
                 month: 'long',
                 day: 'numeric'
             });
-            document.getElementById('time').textContent = currentRide.time;
+            document.getElementById('time').textContent = currentRide.time ? currentRide.time : 'N/A';
 
             // Update seats and price
             document.getElementById('seats').textContent = `${currentRide.availableSeats} available`;
