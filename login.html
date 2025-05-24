@@ -6,12 +6,11 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Welcome to Raahi</title>
     <script type="module" src="./firebase.js"></script>
-    <script type="module" src="./fast2sms.js"></script>
+    <script type="module" src="./twilio.js"></script>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <link rel="stylesheet" href="styles.css">
-    <meta name="fast2sms" content="PO2TWVQfaHTHZYoKmKb5tPvQulljB7lU">
     <style>
         .error-message {
             color: #dc2626;
@@ -143,6 +142,8 @@
                     <p id="loginError" class="error-message text-center"></p>
                 </form>
 
+                <p id="forgotPasswordMessage" class="text-center text-gray-600 mt-4 hidden">Please create a new account if you have forgotten your password.</p>
+
                 <!-- Signup Form (Initially Hidden) -->
                 <form id="signupForm" class="space-y-6 hidden">
                     <div>
@@ -166,6 +167,7 @@
                             <div id="signupOtpTimer" class="absolute right-2 top-1/2 transform -translate-y-1/2 text-sm text-gray-500"></div>
                         </div>
                         <p id="signupOtpError" class="error-message">Invalid OTP</p>
+                        <button type="button" id="signupVerifyOtpBtn" class="mt-2 w-full bg-green-600 text-white py-2 rounded-lg font-semibold hover:bg-green-700 transition duration-200">Verify OTP</button>
                         <button type="button" id="signupResendOtpBtn" class="mt-2 text-sm text-green-600 hover:text-green-700 hidden">
                             Resend OTP
                         </button>
@@ -353,7 +355,7 @@
     </script>
     <!-- Firebase SDK -->
     <script type="module">
-        import { sendOTP, verifyOTP, isOTPExpired, getOTPRemainingTime } from './fast2sms.js';
+        import { sendOTP, verifyOTP, isOTPExpired, getOTPRemainingTime } from './twilio.js';
         import { loginUser, registerUser } from './firebase.js';
 
         document.addEventListener('DOMContentLoaded', function() {
@@ -451,6 +453,7 @@
                     startOtpTimer();
                     signupPhone.disabled = true;
                     signupSendOtpBtn.textContent = 'OTP Sent';
+                    signupOtpSection.classList.remove('hidden');
 
                 } catch (error) {
                     console.error('Error sending OTP:', error);
@@ -659,8 +662,21 @@
                     document.body.style.overflow = 'auto';
                 }
             });
+
+            // Get the forgot password link and message element
+            const forgotPasswordLink = document.getElementById('forgotPassword');
+            const forgotPasswordMessage = document.getElementById('forgotPasswordMessage');
+
+            // Add event listener to the forgot password link
+            forgotPasswordLink.addEventListener('click', function(event) {
+                event.preventDefault(); // Prevent the default link behavior
+                forgotPasswordMessage.classList.remove('hidden'); // Show the message
+            });
         });
     </script>
+    <footer class="w-full text-center py-4 text-gray-500 text-sm bg-transparent mt-8">
+      © Raahi. All rights reserved. Since 2025.
+    </footer>
 </body>
 
 </html>
